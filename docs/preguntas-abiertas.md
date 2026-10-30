@@ -1,18 +1,24 @@
 # Preguntas abiertas
 
-## Para el dueño del proyecto
-1. ¿Qué tiendas chilenas de cartas usas o consideras referencia?
-2. ¿Qué precio representa el "valor" de una carta? Por ejemplo, promedio de mercado, el más bajo publicado o el de ventas reales.
-3. ¿Registras la condición de cada carta (NM, LP, MP...)? Cambia bastante el precio.
-4. ¿Cuántas cartas tiene la colección, aproximadamente? Define la carga de la tarea diaria.
-5. ¿El repositorio será público o privado? Afecta los minutos gratis de GitHub Actions.
-6. ¿Qué licencia quieres para el código? Por ejemplo, MIT, o ninguna (todos los derechos reservados).
-7. ¿Quieres guardar la foto de cada carta? Si es así, ¿en Google Drive?
+## Respondidas (2026-10-30)
+| Pregunta | Respuesta |
+|---|---|
+| Tiendas chilenas de referencia | TCGmatch; investigar otras parecidas (ver `mercados.md`) |
+| Qué precio es el "valor" | Dos valores: **promedio publicado** y **promedio de ventas reales** |
+| Tamaño de la colección | ~60 cartas |
+| Repo público o privado | Público |
+| Licencia | Todos los derechos reservados, para poder comercializarlo después (ver `LICENSE`) |
+| Condición de las cartas | Sí, se registra por carta (NM por defecto) |
+| Fotos de las cartas | Sí, en Google Drive |
+
+## Pendientes para el dueño del proyecto
+Ninguna por ahora.
 
 ## Técnicas (a verificar)
 - Estado actual y límites gratuitos de pokemontcg.io, pokemontcgapi.com y TCGdex.
+- Qué fuentes entregan **ventas reales** (no solo publicaciones): ventas completadas de eBay; si el "market price" de TCGplayer y el "trend" de Cardmarket se calculan con ventas; si TCGmatch muestra ventas cerradas.
+- Términos de uso de cada sitio a scrapear (solo se revisó robots.txt).
 - Si existe API de búsqueda pública de Mercado Libre Chile.
 - OCR japonés en ML Kit (Android) y alternativa en Windows.
-- Límites del plan gratuito de GitHub Actions.
 - Fuente del tipo de cambio CLP.
-- Términos de uso de cada sitio que se scrapeará.
+- Qué fuentes permiten filtrar por condición (TCGmatch sí la muestra; el resto por revisar).

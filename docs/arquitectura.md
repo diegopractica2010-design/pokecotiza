@@ -70,6 +70,12 @@ Cada consulta pasa por:
 - límite de frecuencia por dominio
 - registro de errores
 
+### 2b. Cálculo del valor
+Por carta se guardan dos valores en CLP:
+- **Promedio publicado:** promedio de las ofertas vigentes en los mercados activos, descartando extremos (método por definir, p. ej. quitar el 10 % más alto y más bajo).
+- **Promedio de ventas reales:** promedio de ventas cerradas en una ventana de tiempo (p. ej. 30 días), solo de fuentes que entreguen ventas.
+Ambos se filtran por idioma, condición y gradeo de la carta. El valor de la colección es la suma de cada uno.
+
 ### 3. Conversión de moneda
 USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. Fuente por verificar (candidato: mindicador.cl).
 
@@ -77,12 +83,13 @@ USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. F
 Planilla única con pestañas:
 | Pestaña | Una fila por | Columnas principales |
 |---|---|---|
-| `Coleccion` | carta física | id, nombre, set, número, regulación, idioma, condición, gradeadora, nota, cantidad, foto, fecha_alta |
+| `Coleccion` | carta física | id, nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
 | `Precios` | cotización (historial, solo se agregan filas) | id_carta, fecha, mercado, precio, moneda, precio_clp, tipo (venta/oferta), url |
 | `Resumen` | día | fecha, valor_total_clp (fórmulas) |
 | `Config` | parámetro | mercados activos, tipo de cambio, etc. |
 
 - **App:** inicia sesión con la cuenta de Google del usuario (OAuth) y lee y escribe la planilla.
+- **Fotos:** se suben a una carpeta `PokeCotiza/fotos` en el Google Drive del usuario; la columna `foto` guarda el enlace. Se pide solo el permiso de Drive que da acceso a los archivos creados por la app (`drive.file`), no a todo el Drive.
 - **Tarea diaria:** usa una *cuenta de servicio* de Google con acceso solo a esa planilla. La credencial se guarda como *secret* de GitHub.
 - **Caché local:** SQLite en el dispositivo para funcionar sin conexión y sincronizar después.
 
@@ -93,7 +100,7 @@ Planilla única con pestañas:
 4. Agrega filas a `Precios` y actualiza `Resumen`.
 5. Si una fuente falla, lo registra y sigue con las demás.
 
-> Por verificar: límites del plan gratuito de Actions según si el repo es público o privado, y si los sitios bloquean las IPs de GitHub.
+> Volumen: ~60 cartas × pocas fuentes = unos cientos de consultas al día, con pausas entre ellas. El repo es público. Por verificar: límites vigentes de GitHub Actions para repos públicos y si los sitios bloquean las IPs de GitHub.
 
 ### 6. Interfaz (pantallas)
 1. **Colección:** lista con valor por carta y total; filtros por set, idioma y gradeo.
