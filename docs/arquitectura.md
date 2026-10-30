@@ -83,12 +83,13 @@ USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. F
 Planilla única con pestañas:
 | Pestaña | Una fila por | Columnas principales |
 |---|---|---|
-| `Coleccion` | carta física | id, nombre, set, número, regulación, idioma, condición, gradeadora, nota, cantidad, foto, fecha_alta |
+| `Coleccion` | carta física | id, nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
 | `Precios` | cotización (historial, solo se agregan filas) | id_carta, fecha, mercado, precio, moneda, precio_clp, tipo (venta/oferta), url |
 | `Resumen` | día | fecha, valor_total_clp (fórmulas) |
 | `Config` | parámetro | mercados activos, tipo de cambio, etc. |
 
 - **App:** inicia sesión con la cuenta de Google del usuario (OAuth) y lee y escribe la planilla.
+- **Fotos:** se suben a una carpeta `PokeCotiza/fotos` en el Google Drive del usuario; la columna `foto` guarda el enlace. Se pide solo el permiso de Drive que da acceso a los archivos creados por la app (`drive.file`), no a todo el Drive.
 - **Tarea diaria:** usa una *cuenta de servicio* de Google con acceso solo a esa planilla. La credencial se guarda como *secret* de GitHub.
 - **Caché local:** SQLite en el dispositivo para funcionar sin conexión y sincronizar después.
 

@@ -27,7 +27,8 @@ Código con todos los derechos reservados (ver `LICENSE`); se busca poder comerc
 | RF-10 | Soportar cartas en inglés, español y japonés | Todas | Alta (EN), Media (ES/JP) |
 | RF-11 | Soportar cartas gradeadas (empresa y nota) | Todas | Media |
 | RF-12 | Exportar la colección a Excel | Windows | Baja |
-| RF-13 | Registrar la condición de la carta (NM, LP, MP, HP, DMG) y cotizar según ella | Todas | Por definir |
+| RF-13 | Registrar la condición de la carta (NM, LP, MP, HP, DMG) y cotizar según ella; NM por defecto si no se indica | Todas | Alta |
+| RF-14 | Guardar una foto de cada carta en Google Drive y enlazarla desde la planilla | Android (cámara), Windows (subir archivo) | Media |
 
 ## Requisitos no funcionales
 - **Costo cero de infraestructura:** sin servidor pagado.
