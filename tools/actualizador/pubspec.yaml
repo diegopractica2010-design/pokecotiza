@@ -1,0 +1,15 @@
+name: actualizador
+description: Tarea diaria de PokeCotiza. Cotiza la colección de la planilla de Google Sheets y registra precios y resumen.
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  pokecotiza_core:
+    path: ../../packages/core
+  googleapis_auth: ^2.3.5
+  http: ^1.2.0
+
+dev_dependencies:
+  lints: ^5.0.0

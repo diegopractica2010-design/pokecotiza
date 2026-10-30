@@ -2,10 +2,10 @@ name: Núcleo (pokecotiza_core)
 
 on:
   pull_request:
-    paths: ['packages/core/**', '.github/workflows/core.yml']
+    paths: ['packages/core/**', 'tools/**', '.github/workflows/core.yml']
   push:
     branches: [main]
-    paths: ['packages/core/**', '.github/workflows/core.yml']
+    paths: ['packages/core/**', 'tools/**', '.github/workflows/core.yml']
 
 jobs:
   pruebas:
@@ -25,3 +25,9 @@ jobs:
         run: dart analyze --fatal-infos
       - name: Pruebas
         run: dart test
+      - name: Herramienta de la tarea diaria
+        working-directory: tools/actualizador
+        run: |
+          dart pub get
+          dart format --line-length 120 --output=none --set-exit-if-changed .
+          dart analyze --fatal-infos

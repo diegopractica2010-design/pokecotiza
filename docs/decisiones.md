@@ -36,3 +36,5 @@
 | 32 | 2026-10-30 | Permiso `spreadsheets` en vez de `drive.file` (reemplaza la decisión 26 para la planilla) | Con `drive.file`, no está confirmado que el otro dispositivo pueda abrir la planilla creada en el primero; la vía oficial exige un selector de archivos de Google | `drive.file` + Google Picker |
 | 33 | 2026-10-30 | Credenciales de Google por `--dart-define` desde variables y secretos del repositorio | No quedan en el código; sin ellas la app funciona solo en el dispositivo | Archivo de configuración en el repositorio |
 | 34 | 2026-10-30 | La última cotización de cada carta se guarda también en el dispositivo | La app abre rápido sin leer todo el historial de la planilla | Leer siempre de la planilla |
+| 35 | 2026-10-30 | La tarea diaria usa una cuenta de servicio de Google | No depende de la sesión del usuario (que vence cada 7 días en modo de prueba) | Guardar el token del usuario como secreto |
+| 36 | 2026-10-30 | Si faltan los secretos, la tarea diaria se salta con un aviso | No llenar el historial de ejecuciones fallidas antes de configurarla | Que falle hasta configurarla |
