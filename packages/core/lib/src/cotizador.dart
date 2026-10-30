@@ -46,6 +46,8 @@ class Cotizador {
           fallas['TCGdex'] = e.mensaje;
         } on FormatoInesperado catch (e) {
           fallas['TCGdex'] = e.mensaje;
+        } on FormatException catch (e) {
+          fallas['TCGdex'] = 'respuesta ilegible: ${e.message}';
         }
       }
       if (carta.tcgmatchId != null) {
@@ -56,6 +58,8 @@ class Cotizador {
           fallas['TCGmatch'] = e.mensaje;
         } on FormatoInesperado catch (e) {
           fallas['TCGmatch'] = e.mensaje;
+        } on FormatException catch (e) {
+          fallas['TCGmatch'] = 'respuesta ilegible: ${e.message}';
         }
       }
     }

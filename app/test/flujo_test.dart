@@ -37,7 +37,7 @@ class AlmacenMemoria implements Almacen {
   Future<void> guardarTipoCambio(TipoCambio t) async => cambio = t;
 }
 
-EstadoApp estadoDePrueba(AlmacenMemoria almacen) {
+EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false}) {
   http.Response r(String cuerpo, String tipo) =>
       http.Response.bytes(utf8.encode(cuerpo), 200, headers: {'content-type': '$tipo; charset=utf-8'});
   final cliente = ClienteCortes(
@@ -45,7 +45,11 @@ EstadoApp estadoDePrueba(AlmacenMemoria almacen) {
     cliente: MockClient((req) async {
       final u = req.url;
       if (u.host == 'tcgmatch.cl') return r(fixture('tcgmatch_catalogo.html'), 'text/html');
-      if (u.host == 'mindicador.cl') return r(fixture('mindicador.json'), 'application/json');
+      if (u.host == 'mindicador.cl') {
+        return mindicadorCaido
+            ? http.Response('<html>error</html>', 200)
+            : r(fixture('mindicador.json'), 'application/json');
+      }
       if (u.path.endsWith('/cards')) return r(fixture('tcgdex_busqueda.json'), 'application/json');
       if (u.path.contains('/sets/')) return r('{"cardCount":{"official":131}}', 'application/json');
       if (u.path.contains('/cards/')) return r(fixture('tcgdex_carta_es.json'), 'application/json');
@@ -145,5 +149,38 @@ void main() {
     await otra.eliminarCarta('c1');
     expect((await otra.leerCartas()).cartas, isEmpty);
     await dir.delete(recursive: true);
+  });
+
+  test('guardados simultáneos en el almacén local no se pisan', () async {
+    final dir = await Directory.systemTemp.createTemp('pokecotiza');
+    final a = AlmacenLocal(File('${dir.path}/coleccion.json'));
+    await Future.wait([
+      for (var i = 0; i < 10; i++) a.guardarCarta(CartaColeccion(id: 'c$i', nombre: 'Carta $i', idioma: Idioma.ingles)),
+    ]);
+    expect((await a.leerCartas()).cartas.length, 10);
+    await dir.delete(recursive: true);
+  });
+
+  test('una gradeada se guarda con su valor aunque el dólar no esté disponible', () async {
+    final almacen = AlmacenMemoria();
+    final estado = estadoDePrueba(almacen, mindicadorCaido: true);
+    final cot = await estado.guardarYCotizar(const CartaColeccion(
+        id: 'g1',
+        nombre: 'Pikachu',
+        idioma: Idioma.japones,
+        gradeo: Gradeo(empresa: 'PSA', nota: '10'),
+        valorManualClp: 450000));
+    expect(cot?.valor.publicadoClp, 450000);
+    expect(estado.total.publicadoClp, 450000);
+  });
+
+  test('si el dólar falla al actualizar, el botón no queda bloqueado', () async {
+    final almacen = AlmacenMemoria()
+      ..cartas['c1'] = const CartaColeccion(id: 'c1', nombre: 'Lucario', idioma: Idioma.espanol, tcgdexId: 'sm6-122');
+    final estado = estadoDePrueba(almacen, mindicadorCaido: true);
+    await estado.cargar();
+    await estado.actualizarPrecios();
+    expect(estado.progreso, isNull);
+    expect(estado.error, contains('mindicador'));
   });
 }

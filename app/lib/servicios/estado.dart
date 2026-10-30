@@ -76,14 +76,22 @@ class EstadoApp extends ChangeNotifier {
 
   Future<CotizacionGuardada?> cotizarUna(CartaColeccion carta) async {
     try {
-      final r = await cotizador.cotizar(carta, await _cambio());
+      // Las gradeadas usan su valor manual en pesos: no necesitan tipo de
+      // cambio, así que se guardan aunque mindicador.cl no responda.
+      final cambio =
+          carta.gradeo != null ? (tipoCambio ?? TipoCambio(usd: 0, eur: 0, fecha: DateTime.now())) : await _cambio();
+      final r = await cotizador.cotizar(carta, cambio);
       final g = CotizacionGuardada(fecha: r.fecha, valor: r.valor, cotizaciones: r.cotizaciones, fallas: r.fallas);
       await almacen.guardarCotizacion(carta.id, g);
       cotizaciones[carta.id] = g;
       notifyListeners();
       return g;
     } on FuenteNoDisponible catch (e) {
-      error = 'No se pudo cotizar: ${e.mensaje}';
+      error = 'No se pudo cotizar ${carta.nombre} (${e.fuente}): ${e.mensaje}';
+      notifyListeners();
+      return null;
+    } on FormatoInesperado catch (e) {
+      error = 'No se pudo cotizar ${carta.nombre} (${e.fuente}): ${e.mensaje}';
       notifyListeners();
       return null;
     }
@@ -95,13 +103,20 @@ class EstadoApp extends ChangeNotifier {
     progreso = (0, cartas.length);
     error = null;
     notifyListeners();
-    for (var i = 0; i < cartas.length; i++) {
-      await cotizarUna(cartas[i]);
-      progreso = (i + 1, cartas.length);
+    try {
+      final lista = [...cartas];
+      for (var i = 0; i < lista.length; i++) {
+        await cotizarUna(lista[i]);
+        progreso = (i + 1, lista.length);
+        notifyListeners();
+      }
+    } on Object catch (e) {
+      error = 'La actualización se detuvo: $e';
+    } finally {
+      // Siempre se libera, para que el botón no quede bloqueado.
+      progreso = null;
       notifyListeners();
     }
-    progreso = null;
-    notifyListeners();
   }
 
   Future<void> eliminar(String id) async {

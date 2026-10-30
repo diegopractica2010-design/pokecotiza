@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 String fixture(String nombre) => File('test/fixtures/$nombre').readAsStringSync();
 
-Cotizador cotizadorFalso({bool tcgmatchCaido = false, List<Uri>? pedidas}) {
+Cotizador cotizadorFalso({bool tcgmatchCaido = false, bool tcgdexCorrupto = false, List<Uri>? pedidas}) {
   final http_ = ClienteCortes(
     pausaMinima: Duration.zero,
     cliente: MockClient((req) async {
@@ -18,6 +18,7 @@ Cotizador cotizadorFalso({bool tcgmatchCaido = false, List<Uri>? pedidas}) {
         return http.Response.bytes(utf8.encode(fixture('tcgmatch_catalogo.html')), 200,
             headers: {'content-type': 'text/html; charset=utf-8'});
       }
+      if (tcgdexCorrupto) return http.Response('{esto no es json', 200);
       return http.Response.bytes(utf8.encode(fixture('tcgdex_carta_es.json')), 200,
           headers: {'content-type': 'application/json; charset=utf-8'});
     }),
@@ -49,6 +50,12 @@ void main() {
     expect(r.fallas.keys, ['TCGmatch']);
     expect(r.cotizaciones.map((c) => c.fuente).toSet(), {'Cardmarket', 'TCGplayer'});
     expect(r.valor.publicadoClp, isNotNull);
+  });
+
+  test('si TCGdex responde algo ilegible, sigue con TCGmatch y lo informa', () async {
+    final r = await cotizadorFalso(tcgdexCorrupto: true).cotizar(carta, cambio);
+    expect(r.fallas.keys, ['TCGdex']);
+    expect(r.cotizaciones.map((c) => c.fuente).toSet(), {'TCGmatch'});
   });
 
   test('una carta sin vínculos no consulta nada', () async {

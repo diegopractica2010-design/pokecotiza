@@ -16,8 +16,19 @@ Iniciada el 2026-10-30. Código en `app/` (Flutter 3.47.9, Dart 3.13.7).
 - **Instaladores automáticos:** `.github/workflows/app.yml` corre análisis y pruebas, compila el APK (en Ubuntu) y la versión de Windows (en un equipo Windows de GitHub), y los deja para descargar 30 días en la pestaña "Actions" del repositorio.
 
 ### Pruebas
-- App: 3 pruebas. Una recorre el flujo completo (agregar → buscar → confirmar con TCGmatch → ver valor) con respuestas reales guardadas; otra verifica que un enlace inválido no guarde nada; otra, que el archivo local guarde y relea los datos. Se rompió el código a propósito (no guardar el vínculo con TCGmatch) y la prueba lo detectó.
+- App: 6 pruebas (3 de ellas por la revisión de Codex). Una recorre el flujo completo (agregar → buscar → confirmar con TCGmatch → ver valor) con respuestas reales guardadas; otra verifica que un enlace inválido no guarde nada; otra, que el archivo local guarde y relea los datos. Se rompió el código a propósito (no guardar el vínculo con TCGmatch) y la prueba lo detectó.
 - Núcleo: 48 pruebas (4 nuevas del cotizador).
+
+### Revisión de Codex (PR #6)
+| Hallazgo | Corrección |
+|---|---|
+| (P1) Cada APK se firmaba con una clave distinta: no se podía actualizar sin desinstalar (y perder la colección local) | Firma con clave estable si existe el secreto del repositorio; guía en [firma-android.md](firma-android.md). **Pendiente: el dueño debe crear el secreto** |
+| Una gradeada no se guardaba si mindicador.cl fallaba | Las gradeadas no piden tipo de cambio |
+| Una respuesta ilegible de TCGdex cortaba la cotización | Se informa como falla de esa fuente y se sigue con TCGmatch |
+| Si "Actualizar precios" fallaba, el botón quedaba bloqueado | El avance se libera siempre |
+| Se aceptaban valores manuales negativos | Se rechazan |
+| Dos guardados simultáneos podían pisarse en el archivo local | Las escrituras se hacen en cola |
+| Si la búsqueda fallaba, desaparecía "Agregar sin catálogo" | Queda siempre disponible |
 
 ### Sin verificar
 - **No se ha ejecutado en un teléfono ni en Windows:** este entorno es Linux y no tiene Android SDK. La compilación la hace GitHub; falta que el dueño instale y pruebe.

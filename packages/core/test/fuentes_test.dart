@@ -208,6 +208,16 @@ void main() {
       expect(t.aClp(10, Moneda.usd), closeTo(9932.2, 0.001));
     });
 
+    test('si responde algo que no es JSON, usa el último conocido', () async {
+      final cliente = MindicadorCliente(ClienteCortes(
+        pausaMinima: Duration.zero,
+        cliente: MockClient((_) async => http.Response('<html>mantenimiento</html>', 200)),
+      ));
+      final ultimo = TipoCambio(usd: 950, eur: 1000, fecha: DateTime(2026, 10, 29));
+      expect((await cliente.obtener(ultimoConocido: ultimo)).usd, 950);
+      expect(cliente.obtener(), throwsA(isA<FormatoInesperado>()));
+    });
+
     test('si el servicio falla usa el último tipo de cambio conocido', () async {
       final cliente = MindicadorCliente(ClienteCortes(
         pausaMinima: Duration.zero,

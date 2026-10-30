@@ -33,7 +33,12 @@ class TipoCambio {
 }
 
 TipoCambio leerMindicador(String cuerpo) {
-  final datos = jsonDecode(cuerpo);
+  final Object? datos;
+  try {
+    datos = jsonDecode(cuerpo);
+  } on FormatException {
+    throw FormatoInesperado(_fuente, 'la respuesta no es JSON válido');
+  }
   double? valor(String clave) {
     final d = datos is Map ? datos[clave] : null;
     final v = d is Map ? d['valor'] : null;
@@ -61,6 +66,9 @@ class MindicadorCliente {
     try {
       return leerMindicador(await _http.obtenerTexto(_uri, fuente: _fuente));
     } on FuenteNoDisponible {
+      if (ultimoConocido != null) return ultimoConocido;
+      rethrow;
+    } on FormatoInesperado {
       if (ultimoConocido != null) return ultimoConocido;
       rethrow;
     }

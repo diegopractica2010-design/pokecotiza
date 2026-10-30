@@ -79,6 +79,16 @@ class AlmacenLocal implements Almacen {
 
   final File archivo;
 
+  /// Cola de operaciones: cada lectura-modificación-escritura espera a la
+  /// anterior, para que dos guardados simultáneos no se pisen.
+  Future<void> _cola = Future.value();
+
+  Future<T> _enCola<T>(Future<T> Function() operacion) {
+    final resultado = _cola.then((_) => operacion());
+    _cola = resultado.then((_) {}, onError: (_) {});
+    return resultado;
+  }
+
   @override
   String get descripcion => 'En este dispositivo';
 
@@ -123,27 +133,28 @@ class AlmacenLocal implements Almacen {
   }
 
   @override
-  Future<void> guardarCarta(CartaColeccion carta) async {
-    final datos = await _leer();
-    final filas = ((datos['cartas'] as List?) ?? []).cast<List>().toList();
-    final fila = cartaAFila(carta);
-    final i = filas.indexWhere((f) => f.isNotEmpty && f.first == carta.id);
-    if (i >= 0) {
-      filas[i] = fila;
-    } else {
-      filas.add(fila);
-    }
-    datos['cartas'] = filas;
-    await _escribir(datos);
-  }
+  Future<void> guardarCarta(CartaColeccion carta) => _enCola(() async {
+        final datos = await _leer();
+        final filas = ((datos['cartas'] as List?) ?? []).cast<List>().toList();
+        final fila = cartaAFila(carta);
+        final i = filas.indexWhere((f) => f.isNotEmpty && f.first == carta.id);
+        if (i >= 0) {
+          filas[i] = fila;
+        } else {
+          filas.add(fila);
+        }
+        datos['cartas'] = filas;
+        await _escribir(datos);
+      });
 
   @override
-  Future<void> eliminarCarta(String id) async {
-    final datos = await _leer();
-    datos['cartas'] = ((datos['cartas'] as List?) ?? []).cast<List>().where((f) => f.isEmpty || f.first != id).toList();
-    (datos['cotizaciones'] as Map?)?.remove(id);
-    await _escribir(datos);
-  }
+  Future<void> eliminarCarta(String id) => _enCola(() async {
+        final datos = await _leer();
+        datos['cartas'] =
+            ((datos['cartas'] as List?) ?? []).cast<List>().where((f) => f.isEmpty || f.first != id).toList();
+        (datos['cotizaciones'] as Map?)?.remove(id);
+        await _escribir(datos);
+      });
 
   @override
   Future<Map<String, CotizacionGuardada>> leerCotizaciones() async {
@@ -160,13 +171,13 @@ class AlmacenLocal implements Almacen {
   }
 
   @override
-  Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async {
-    final datos = await _leer();
-    final m = Map<String, dynamic>.from(datos['cotizaciones'] as Map? ?? {});
-    m[idCarta] = c.aJson();
-    datos['cotizaciones'] = m;
-    await _escribir(datos);
-  }
+  Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) => _enCola(() async {
+        final datos = await _leer();
+        final m = Map<String, dynamic>.from(datos['cotizaciones'] as Map? ?? {});
+        m[idCarta] = c.aJson();
+        datos['cotizaciones'] = m;
+        await _escribir(datos);
+      });
 
   @override
   Future<TipoCambio?> leerTipoCambio() async {
@@ -175,9 +186,9 @@ class AlmacenLocal implements Almacen {
   }
 
   @override
-  Future<void> guardarTipoCambio(TipoCambio t) async {
-    final datos = await _leer();
-    datos['tipoCambio'] = t.aJson();
-    await _escribir(datos);
-  }
+  Future<void> guardarTipoCambio(TipoCambio t) => _enCola(() async {
+        final datos = await _leer();
+        datos['tipoCambio'] = t.aJson();
+        await _escribir(datos);
+      });
 }

@@ -29,11 +29,24 @@ android {
         versionName = flutter.versionName
     }
 
+    // Firma estable para poder actualizar la app sin desinstalarla. La clave
+    // llega por variables de entorno (en GitHub Actions, desde secretos del
+    // repositorio). Sin ellas se usa la clave de desarrollo. Ver docs/firma-android.md.
+    val rutaClave = System.getenv("ANDROID_KEYSTORE_PATH")
+    signingConfigs {
+        if (rutaClave != null) {
+            create("release") {
+                storeFile = file(rutaClave)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "pokecotiza"
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD") ?: System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (rutaClave != null) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }
     }
 }

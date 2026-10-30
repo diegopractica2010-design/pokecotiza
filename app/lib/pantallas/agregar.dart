@@ -172,11 +172,15 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
                   onTap: () => _elegir(r),
                 ),
               ),
-            TextButton(
-              onPressed: () => _elegir(null),
+          ],
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: _nombre.text.trim().isEmpty && candidatas == null ? null : () => _elegir(null),
               child: const Text('Agregar sin catálogo (por ejemplo, una gradeada)'),
             ),
-          ],
+          ),
         ],
       ),
     );

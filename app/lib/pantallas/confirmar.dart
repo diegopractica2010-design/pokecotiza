@@ -56,8 +56,8 @@ class _PantallaConfirmarState extends State<PantallaConfirmar> {
     }
     final valorManual =
         _valorManual.text.trim().isEmpty ? null : int.tryParse(_valorManual.text.replaceAll('.', '').trim());
-    if (_gradeada && valorManual == null) {
-      return setState(() => _error = 'Para una carta gradeada ingresa su valor en pesos (sin decimales).');
+    if (_gradeada && (valorManual == null || valorManual < 0)) {
+      return setState(() => _error = 'Para una carta gradeada ingresa su valor en pesos: un número entero, 0 o mayor.');
     }
     setState(() {
       _guardando = true;
