@@ -10,7 +10,7 @@ Iniciada el 2026-10-30.
 - [x] mindicador.cl: dólar y euro, con respaldo al último valor conocido.
 - [x] Valorización: mediana publicada, mediana de ventas (prefiere CLP), gradeadas manuales, total de la colección.
 - [x] Cliente HTTP con pausa entre peticiones al mismo sitio.
-- [x] 28 pruebas con respuestas reales guardadas; CI en GitHub Actions (formato, análisis, pruebas).
+- [x] 29 pruebas con respuestas reales guardadas; CI en GitHub Actions (formato, análisis, pruebas).
 - [x] Prueba manual contra los sitios reales con `example/cotizar.dart` (2026-10-30).
 
 ## Resultado de la prueba real (2026-10-30)
@@ -34,6 +34,12 @@ Al generar la página de pruebas con textos de cartas reales aparecieron cuatro 
 | El ilustrador ("Yuka Morii 1/131") se tomaba como código de set | El código de set exige mayúsculas y dígitos (OBF, MEW, SV2a) |
 | TCGdex no encuentra "Lucario-GX" (la llama "Lucario GX") | La búsqueda reintenta sin guion y luego con la primera palabra |
 | El filtro de número de TCGdex es aproximado ("1" trae "102") y la primera candidata podía ser de otra expansión | Se dejan solo números exactos y se ordenan primero las expansiones cuyo total oficial coincide con el impreso ("131" en "1/131") |
+
+### Revisión de Codex (PR #3)
+| Hallazgo | Corrección |
+|---|---|
+| TCGplayer: una carta normal usaba el precio holofoil si no había precio normal (contradice la decisión 22) | Cada acabado usa solo su variante; si no existe, se omite TCGplayer |
+| Pausa entre peticiones: varias peticiones simultáneas al mismo sitio podían salir juntas | El cliente reserva el turno de cada petición antes de esperar |
 
 ## Página de pruebas
 - `web/lector_js.dart`: expone el lector al navegador. Compilar con `dart compile js -O2 -o lector.js web/lector_js.dart`.

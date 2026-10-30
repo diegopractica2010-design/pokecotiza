@@ -33,13 +33,15 @@ class ClienteCortes {
     return respuesta.body;
   }
 
+  /// Reserva el próximo turno del dominio antes de esperar, para que varias
+  /// peticiones simultáneas queden separadas por [pausaMinima] y no salgan juntas.
   Future<void> _esperarTurno(String host) async {
-    final ultima = _ultimaPeticion[host];
-    if (ultima != null) {
-      final espera = pausaMinima - DateTime.now().difference(ultima);
-      if (espera > Duration.zero) await Future<void>.delayed(espera);
-    }
-    _ultimaPeticion[host] = DateTime.now();
+    final ahora = DateTime.now();
+    final anterior = _ultimaPeticion[host];
+    final siguiente = anterior == null || ahora.isAfter(anterior.add(pausaMinima)) ? ahora : anterior.add(pausaMinima);
+    _ultimaPeticion[host] = siguiente;
+    final espera = siguiente.difference(ahora);
+    if (espera > Duration.zero) await Future<void>.delayed(espera);
   }
 
   void cerrar() => _cliente.close();

@@ -14,4 +14,6 @@
 
 ### Corregido
 - Lector: "Etapa N" ya no se toma como nombre; el ilustrador ya no se toma como código de set.
+- TCGplayer: ya no se usa la variante de otro acabado (revisión de Codex).
+- Cliente HTTP: peticiones simultáneas al mismo sitio respetan la pausa (revisión de Codex).
 - TCGdex: la búsqueda tolera guiones en el nombre, filtra números exactos y ordena por total de la expansión.

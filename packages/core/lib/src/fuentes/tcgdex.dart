@@ -215,8 +215,8 @@ List<Cotizacion> cotizacionesDesdeTcgdex(Object? pricing, {Acabado acabado = Aca
         if (e.value is Map<String, dynamic>) e.key: e.value as Map<String, dynamic>,
     };
     final preferidas = switch (acabado) {
-      Acabado.normal => ['normal', 'holofoil'],
-      Acabado.holo => ['holofoil', 'normal'],
+      Acabado.normal => ['normal'],
+      Acabado.holo => ['holofoil'],
       Acabado.reverseHolo => ['reverseHolofoil'],
     };
     // Si no existe la variante del acabado pedido se omite TCGplayer: mezclar acabados da precios engañosos.

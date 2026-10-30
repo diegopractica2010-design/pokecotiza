@@ -88,9 +88,10 @@ void main() {
       expect(c.cotizaciones.first.valor, 11.56);
     });
 
-    test('normal: si TCGplayer solo tiene holofoil, se usa como respaldo', () {
+    test('normal: si TCGplayer solo tiene holofoil, no se usa (no mezcla acabados)', () {
       final c = leerCartaTcgdex(fixture('tcgdex_carta_es.json'));
-      expect(c.cotizaciones.map((q) => q.detalle), contains('tcgplayer holofoil marketPrice vía TCGdex'));
+      expect(c.cotizaciones.where((q) => q.fuente == 'TCGplayer'), isEmpty);
+      expect(c.cotizaciones.map((q) => q.detalle), ['cardmarket trend vía TCGdex', 'cardmarket avg30 vía TCGdex']);
     });
 
     test('búsqueda descarta cartas de TCG Pocket', () async {
@@ -152,6 +153,23 @@ void main() {
     ));
     final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'Exeggcute', numeroLocal: '1', totalSet: 131);
     expect(r.map((e) => e.id), ['sm6-1', 'sv08.5-001', 'sm5-1']);
+  });
+
+  test('ClienteCortes separa peticiones simultáneas al mismo dominio', () async {
+    final inicios = <DateTime>[];
+    final cliente = ClienteCortes(
+      pausaMinima: const Duration(milliseconds: 200),
+      cliente: MockClient((req) async {
+        inicios.add(DateTime.now());
+        return http.Response('ok', 200);
+      }),
+    );
+    final uri = Uri.parse('https://ejemplo.cl/a');
+    await Future.wait([for (var i = 0; i < 3; i++) cliente.obtenerTexto(uri, fuente: 'prueba')]);
+    inicios.sort();
+    for (var i = 1; i < inicios.length; i++) {
+      expect(inicios[i].difference(inicios[i - 1]).inMilliseconds, greaterThanOrEqualTo(190));
+    }
   });
 
   group('mindicador', () {
