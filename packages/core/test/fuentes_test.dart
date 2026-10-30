@@ -88,9 +88,10 @@ void main() {
       expect(c.cotizaciones.first.valor, 11.56);
     });
 
-    test('normal: si TCGplayer solo tiene holofoil, se usa como respaldo', () {
+    test('normal: si TCGplayer solo tiene holofoil, no se usa (no mezcla acabados)', () {
       final c = leerCartaTcgdex(fixture('tcgdex_carta_es.json'));
-      expect(c.cotizaciones.map((q) => q.detalle), contains('tcgplayer holofoil marketPrice vía TCGdex'));
+      expect(c.cotizaciones.where((q) => q.fuente == 'TCGplayer'), isEmpty);
+      expect(c.cotizaciones.map((q) => q.detalle), ['cardmarket trend vía TCGdex', 'cardmarket avg30 vía TCGdex']);
     });
 
     test('búsqueda descarta cartas de TCG Pocket', () async {
@@ -118,6 +119,85 @@ void main() {
     final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'pikachu', numeroLocal: '025');
     expect(pedidas, ['025', '25']);
     expect(r.single.id, 'sv3pt5-25');
+  });
+
+  test('TCGdex reintenta con el nombre sin guion y luego con la primera palabra', () async {
+    final pedidas = <String?>[];
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        final nombre = req.url.queryParameters['name'];
+        pedidas.add(nombre);
+        return http.Response(
+            nombre == 'Lucario' ? '[{"id":"sm6-122","localId":"122","name":"Lucario GX"}]' : '[]', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.espanol, nombre: 'Lucario-GX', numeroLocal: '122');
+    expect(pedidas, ['Lucario-GX', 'Lucario GX', 'Lucario']);
+    expect(r.single.id, 'sm6-122');
+  });
+
+  test('TCGdex deja solo números exactos y ordena por total de la expansión', () async {
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        if (req.url.path.endsWith('/cards')) {
+          return http.Response(
+              '[{"id":"sm5-1","localId":"1","name":"Exeggcute"},{"id":"sm6-1","localId":"1","name":"Exeggcute"},'
+              '{"id":"bw10-102","localId":"102","name":"Exeggcute"},{"id":"sv08.5-001","localId":"001","name":"Exeggcute"}]',
+              200);
+        }
+        final oficial = {'sm5': 156, 'sm6': 131, 'sv08.5': 131}[req.url.pathSegments.last];
+        return http.Response('{"cardCount":{"official":$oficial}}', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'Exeggcute', numeroLocal: '1', totalSet: 131);
+    expect(r.map((e) => e.id), ['sm6-1', 'sv08.5-001', 'sm5-1']);
+  });
+
+  test('ClienteCortes separa peticiones simultáneas al mismo dominio', () async {
+    final inicios = <DateTime>[];
+    final cliente = ClienteCortes(
+      pausaMinima: const Duration(milliseconds: 200),
+      cliente: MockClient((req) async {
+        inicios.add(DateTime.now());
+        return http.Response('ok', 200);
+      }),
+    );
+    final uri = Uri.parse('https://ejemplo.cl/a');
+    await Future.wait([for (var i = 0; i < 3; i++) cliente.obtenerTexto(uri, fuente: 'prueba')]);
+    inicios.sort();
+    for (var i = 1; i < inicios.length; i++) {
+      expect(inicios[i].difference(inicios[i - 1]).inMilliseconds, greaterThanOrEqualTo(190));
+    }
+  });
+
+  test('TCGdex limita cuántas expansiones consulta por búsqueda', () async {
+    var consultasSet = 0;
+    final cartas = [for (var i = 0; i < 20; i++) '{"id":"set$i-1","localId":"1","name":"X"}'].join(',');
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        if (req.url.path.endsWith('/cards')) return http.Response('[$cartas]', 200);
+        consultasSet++;
+        return http.Response('{"cardCount":{"official":131}}', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'X', numeroLocal: '1', totalSet: 131);
+    expect(r, hasLength(20));
+    expect(consultasSet, TcgdexCliente.maxExpansionesPorBusqueda);
+  });
+
+  test('TCGdex reintenta el total de una expansión si antes falló', () async {
+    var fallar = true;
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient(
+          (req) async => fallar ? http.Response('', 503) : http.Response('{"cardCount":{"official":131}}', 200)),
+    ));
+    expect(await cliente.totalOficialSet(Idioma.ingles, 'sm6'), isNull);
+    fallar = false;
+    expect(await cliente.totalOficialSet(Idioma.ingles, 'sm6'), 131);
   });
 
   group('mindicador', () {
