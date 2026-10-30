@@ -2,6 +2,7 @@
 
 ## [Sin publicar]
 ### Añadido
+- Fase 6: tarea diaria en GitHub Actions (`tools/actualizador`) que cotiza la colección y registra precios y resumen en la planilla; lógica `actualizarColeccion` en el núcleo con 3 pruebas.
 - Fase 4 (parte B): Ajustes para guardar la colección en Google Sheets (crear planilla, conectar otro dispositivo, subir cartas del dispositivo), inicio de sesión en Android y Windows; guía de credenciales.
 - Fase 4 (parte A): app Flutter para Android y Windows con pantallas de colección, agregar, confirmar y detalle; almacenamiento en el dispositivo; compilación automática de APK y Windows.
 - Núcleo: `Cotizador` (junta TCGdex y TCGmatch por carta).

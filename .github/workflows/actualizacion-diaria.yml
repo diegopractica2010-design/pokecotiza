@@ -1,0 +1,49 @@
+name: Actualización diaria de precios
+
+on:
+  schedule:
+    # Todos los días a las 09:47 UTC (06:47 en Chile continental en horario de verano).
+    - cron: '47 9 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: actualizacion-diaria
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tools/actualizador
+    steps:
+      # La clave de la cuenta de servicio solo la ven este paso (para saber si
+      # existe) y el que cotiza; no las acciones de terceros.
+      - name: ¿Está configurada?
+        id: config
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          POKECOTIZA_ID_PLANILLA: ${{ vars.POKECOTIZA_ID_PLANILLA }}
+        run: |
+          if [ -z "$GOOGLE_SERVICE_ACCOUNT_JSON" ] || [ -z "$POKECOTIZA_ID_PLANILLA" ]; then
+            echo "::notice::Tarea diaria sin configurar (faltan GOOGLE_SERVICE_ACCOUNT_JSON o POKECOTIZA_ID_PLANILLA). Ver docs/tarea-diaria.md."
+            echo "lista=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "lista=si" >> "$GITHUB_OUTPUT"
+          fi
+        working-directory: .
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.lista == 'si'
+      - uses: dart-lang/setup-dart@v1
+        if: steps.config.outputs.lista == 'si'
+        with:
+          sdk: 3.13.7
+      - run: dart pub get
+        if: steps.config.outputs.lista == 'si'
+      - name: Cotizar la colección
+        if: steps.config.outputs.lista == 'si'
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          POKECOTIZA_ID_PLANILLA: ${{ vars.POKECOTIZA_ID_PLANILLA }}
+        run: dart run bin/actualizar.dart

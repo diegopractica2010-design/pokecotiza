@@ -139,6 +139,43 @@ class PlanillaColeccion {
     return resultado;
   }
 
+  /// Últimas cotizaciones registradas de cada carta (las de su fecha de
+  /// registro más reciente). Sirve para no contar como 0 una carta cuyas
+  /// fuentes fallaron hoy.
+  Future<Map<String, List<Cotizacion>>> ultimasCotizaciones() async {
+    final filas = await _sheets.leer(idPlanilla, Esquema.rango(Esquema.precios));
+    final ultimaFecha = <String, String>{};
+    final porCarta = <String, List<List<Object?>>>{};
+    for (final f in filas.skip(1)) {
+      if (f.length < 7) continue;
+      final id = '${f[1]}';
+      final fecha = '${f[0]}';
+      final previa = ultimaFecha[id];
+      if (previa == null || fecha.compareTo(previa) > 0) {
+        ultimaFecha[id] = fecha;
+        porCarta[id] = [f];
+      } else if (fecha == previa) {
+        porCarta[id]!.add(f);
+      }
+    }
+    final r = <String, List<Cotizacion>>{};
+    for (final e in porCarta.entries) {
+      r[e.key] = [
+        for (final f in e.value)
+          if (TipoPrecio.values.where((t) => t.name == '${f[3]}').firstOrNull case final tipo?)
+            if (Moneda.values.where((m) => m.name == '${f[4]}'.toLowerCase()).firstOrNull case final moneda?)
+              if (f[5] is num)
+                Cotizacion(
+                    fuente: '${f[2]}',
+                    tipo: tipo,
+                    moneda: moneda,
+                    valor: (f[5] as num).toDouble(),
+                    detalle: 'precio anterior'),
+      ];
+    }
+    return r;
+  }
+
   /// Agrega una fila al resumen diario con el valor total de la colección.
   Future<void> registrarResumen(({int publicadoClp, int ventasClp}) total, int cartas, {DateTime? fecha}) async {
     await _sheets.agregar(idPlanilla, Esquema.rango(Esquema.resumen), [
