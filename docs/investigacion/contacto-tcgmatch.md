@@ -1,5 +1,7 @@
 # Borrador de correo a TCGmatch
 
+> **No enviado.** El dueño decidió (2026-10-30) que la app es de uso personal, así que no se pide autorización por ahora. Enviar solo si más adelante se comercializa.
+
 Para: contacto@tcgmatch.cl
 Asunto: Consulta sobre uso de precios de TCGmatch en una app de colección
 

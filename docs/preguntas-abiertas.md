@@ -11,9 +11,10 @@
 | Condición de las cartas | Sí, se registra por carta (NM por defecto) |
 | Fotos de las cartas | Sí, en Google Drive |
 | Ventas reales: ¿mediana o promedio? | Mediana (lo que entrega TCGmatch) |
+| ¿Pedir autorización a TCGmatch? | No por ahora: la app es de uso personal. El borrador queda guardado por si se comercializa |
 
 ## Pendientes para el dueño del proyecto
-1. ¿Envías el correo a TCGmatch (borrador en `investigacion/contacto-tcgmatch.md`)? Recomendado antes de comercializar.
+Ninguna por ahora.
 
 ## Técnicas (a verificar)
 - Estado actual y límites gratuitos de pokemontcg.io, pokemontcgapi.com y TCGdex.
