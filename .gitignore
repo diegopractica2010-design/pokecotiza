@@ -1,9 +1,16 @@
+# Dart / Flutter
 .dart_tool/
-.packages
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
 *.iml
+# IDEs
 .idea/
 .vscode/
-pubspec.lock
+# Credenciales: nunca subir
+*.keystore
+*.jks
+key.properties
+credentials*.json
+service-account*.json
+.env

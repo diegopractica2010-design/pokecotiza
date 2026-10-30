@@ -1,19 +1,28 @@
 # PokeCotiza
 
-Aplicación para **Android y Windows** que cotiza cartas Pokémon TCG consultando (web scraping / APIs) los principales mercados de Chile y del mundo, y muestra los precios comparados en CLP.
+App para **Android y Windows** que valoriza una colección de cartas Pokémon TCG: identifica cada carta (foto, búsqueda manual o planilla), la cotiza en mercados de Chile y del mundo, y guarda la colección y el historial de precios en **Google Sheets**.
 
-## Stack propuesto
-- **Flutter** (un solo código para Android y Windows).
-- Scrapers en Dart (`http` + `html`), uno por mercado, detrás de una interfaz común (`lib/scrapers/scraper.dart`).
+> **Estado:** fase de diseño. Todavía no hay código; primero se definen requisitos, arquitectura y plan.
 
-## Mercados
-Ver [`docs/mercados.md`](docs/mercados.md). La lista está en revisión: cada fuente debe validarse (estructura del sitio, términos de uso, existencia de API oficial) antes de implementarse.
+## Qué hará
+- **Identificar cartas**
+  - Android: foto con la cámara → lee nombre, PS, código de set, letra de regulación y número.
+  - Android y Windows: ingreso manual.
+  - Windows: importar un Excel o una hoja de Google Sheets.
+- **Cotizar** en varios mercados y convertir a CLP.
+- **Guardar** la colección y los precios en Google Sheets, compartida entre teléfono y PC.
+- **Actualizar a diario** los precios de toda la colección con una tarea gratuita de GitHub Actions, y llevar historial.
+- Cartas en **inglés, español y japonés**, y **gradeadas** (PSA, etc.).
 
-## Estado
-Estructura inicial. Nada compilado ni probado todavía.
+## Documentación
+| Documento | Contenido |
+|---|---|
+| [docs/requisitos.md](docs/requisitos.md) | Qué debe hacer la app (requisitos levantados contigo) |
+| [docs/arquitectura.md](docs/arquitectura.md) | Diseño técnico en papel |
+| [docs/mercados.md](docs/mercados.md) | Fuentes de precios y su estado de verificación |
+| [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md) | Fases, entregables y orden de desarrollo |
+| [docs/decisiones.md](docs/decisiones.md) | Registro de decisiones y por qué se tomaron |
+| [docs/preguntas-abiertas.md](docs/preguntas-abiertas.md) | Lo que falta definir |
 
-## Desarrollo
-```bash
-flutter pub get
-flutter run -d windows   # o un dispositivo Android
-```
+## Stack previsto
+Flutter (Dart) para la app, un paquete Dart compartido con la lógica de cotización, Google Sheets como base de datos y GitHub Actions para la actualización diaria. Detalle en la arquitectura.
