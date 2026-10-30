@@ -63,9 +63,19 @@ Con 60 cartas, vincularlas es un trabajo de una sola vez de unos minutos.
 | Condición | AFK Store (variantes) | Publicaciones de TCGmatch (futuro) |
 | Tipo de cambio | mindicador.cl | — |
 
-## Pendiente para cerrar la fase 1
-- Gradeadas en TCGmatch: estructura de esas páginas.
-- Mercado Libre: probar con una app registrada.
-- eBay: requisitos de su API para ventas completadas.
-- Términos de uso de TCGdex, AFK Store, Pokestop y CardRush.
-- Confirmar qué significa cada precio de Cardmarket (`avg`, `trend`, `avg30`).
+## Cierre de la fase 1 (2026-10-30)
+| Tema | Resultado | Consecuencia |
+|---|---|---|
+| Gradeadas en TCGmatch | La búsqueda `/cartas/busqueda/type=graded` se carga desde `/api/` (la página trae solo la lista de juegos). No hay datos públicos sin la API | Gradeadas: **valor manual** por ahora (el usuario ingresa el valor). Se podrá vincular una publicación gradeada concreta más adelante |
+| eBay (ventas reales) | Según la documentación oficial, la Marketplace Insights API (historial de ventas de 90 días) es de **acceso restringido**: solo para desarrolladores aprobados por eBay | **Descartado** por ahora |
+| Mercado Libre | La API respondió 403 sin autenticación. La documentación oficial atribuye el 403 a token o permisos; un tercero dice que desde 2025 las búsquedas anónimas devuelven 403 (no confirmado oficialmente) | **Pospuesto** a la fase 9: habría que registrar una app y usar OAuth |
+| TCGdex | Su base de datos de cartas tiene **licencia MIT** (`tcgdex/cards-database`). Los precios provienen de Cardmarket y TCGplayer, cuyos términos pueden restringir la redistribución | **Aprobado** para uso personal |
+| Campos de Cardmarket | Según el SDK de TCGdex y un tercero: `low` = publicación más barata; `trend` = precio de tendencia de Cardmarket; `avg1/avg7/avg30` = promedio de **ventas** de 1, 7 y 30 días; sufijo `-holo` para la versión holo. No hay documentación oficial que lo confirme | Se usará `avg30` como respaldo de "ventas reales", marcado como fuente secundaria |
+| AFK Store | Sus términos de servicio no mencionan scraping ni robots | **Aprobado** (feed `/products.json`) |
+| Pokestop | No tiene página de términos en `/policies/terms-of-service` (404); robots.txt permite las páginas de productos | **Aprobado** con baja frecuencia (fase 9) |
+| CardRush | robots.txt solo bloquea bots de IA; términos no revisados (sitio en japonés) | Pospuesto: TCGdex ya cubre precios de cartas japonesas vía Cardmarket |
+
+### Fuentes que entran en la fase 2
+1. **TCGdex:** catálogo (EN/ES/JA) y precios Cardmarket/TCGplayer.
+2. **TCGmatch:** precios CLP por idioma y mediana de ventas, vía `/producto/catalogo/{id}`.
+3. **mindicador.cl:** USD y EUR a CLP.

@@ -4,9 +4,9 @@ Cada fase termina con algo usable y se revisa antes de pasar a la siguiente.
 
 | Fase | Objetivo | Entregables | Depende de |
 |---|---|---|---|
-| **0. Levantamiento y diseño** | Definir qué se construye | README, requisitos, arquitectura, mercados, plan, plantillas de issues (este commit) | — |
-| **1. Investigación de fuentes** | Validar cada fuente antes de programar | Tabla de mercados actualizada con API/ToS/límites, más una prueba mínima de cada una | 0 |
-| **2. Núcleo** | Lógica sin interfaz | `packages/core`: modelos, parser de carta, cliente de catálogo, conversión CLP, pruebas | 1 |
+| **0. Levantamiento y diseño** ✅ | Definir qué se construye | README, requisitos, arquitectura, mercados, plan, plantillas de issues | — |
+| **1. Investigación de fuentes** ✅ | Validar cada fuente antes de programar | Tabla de mercados actualizada con API/ToS/límites, más una prueba mínima de cada una | 0 |
+| **2. Núcleo** 🚧 | Lógica sin interfaz | `packages/core`: modelos, parser de carta, cliente de catálogo, conversión CLP, pruebas | 1 |
 | **3. Google Sheets** | Persistencia compartida | Plantilla de la planilla, inicio de sesión con Google, lectura y escritura de Colección y Precios | 2 |
 | **4. App: ingreso manual y cotización** | Primera versión usable | Pantallas Colección / Agregar (manual) / Confirmar / Detalle, en Android y Windows | 2, 3 |
 | **5. Mercados internacionales** | Precios de referencia | Adaptadores TCGplayer y Cardmarket (vía API) | 1, 2 |

@@ -1,6 +1,6 @@
 # Fuentes de precios
 
-> Resultados de las pruebas de la fase 1: ver [investigacion/fase-1-fuentes.md](investigacion/fase-1-fuentes.md).
+> **Fase 1 cerrada.** Resultados y decisiones por fuente: ver [investigacion/fase-1-fuentes.md](investigacion/fase-1-fuentes.md).
 
 > Ninguna fuente está validada todavía. Antes de implementar cada una hay que revisar: términos de uso y robots.txt, si existe API oficial, límites de uso, cobertura (idiomas, gradeadas) y moneda.
 

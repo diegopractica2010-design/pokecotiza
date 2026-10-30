@@ -18,3 +18,6 @@
 | 14 | 2026-10-30 | Tipo de cambio desde mindicador.cl | API pública chilena, probada | — |
 | 15 | 2026-10-30 | Ventas reales se expresan como mediana | Es lo que entrega TCGmatch y resiste ventas atípicas | Promedio |
 | 16 | 2026-10-30 | No contactar a TCGmatch por ahora | La app es de uso personal; lectura de pocas páginas públicas a baja frecuencia | Pedir autorización antes de empezar |
+| 17 | 2026-10-30 | Cartas gradeadas con valor manual por ahora | No hay fuente pública gratuita: TCGmatch las sirve vía `/api/` y eBay restringe su API de ventas | Scrapear la API de TCGmatch; API de eBay |
+| 18 | 2026-10-30 | Mercado Libre pospuesto a la fase 9 | Su API exige autenticación (403 sin token) | Scrapear su HTML |
+| 19 | 2026-10-30 | Cardmarket `avg30` como respaldo de ventas reales | Según fuentes secundarias es promedio de ventas a 30 días | Usar `trend` |
