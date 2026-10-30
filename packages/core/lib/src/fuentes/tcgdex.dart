@@ -90,32 +90,47 @@ class TcgdexCliente {
     return const [];
   }
 
+  /// Máximo de expansiones distintas cuyo total se consulta por búsqueda.
+  /// Cada consulta respeta la pausa del cliente (2 s por defecto), así que
+  /// sin límite una búsqueda con muchas candidatas podría tardar minutos.
+  static const maxExpansionesPorBusqueda = 6;
+
   Future<List<ResultadoTcgdex>> _ordenarPorTotal(Idioma idioma, List<ResultadoTcgdex> r, int total) async {
     final coinciden = <ResultadoTcgdex>[];
     final resto = <ResultadoTcgdex>[];
+    final consultadas = <String>{};
     for (final c in r) {
-      final oficial = await totalOficialSet(idioma, c.idSet);
+      final yaConocido = _totales.containsKey('${idioma.codigoTcgdex}/${c.idSet}');
+      final dentroDelLimite = consultadas.length < maxExpansionesPorBusqueda || consultadas.contains(c.idSet);
+      int? oficial;
+      if (yaConocido || dentroDelLimite) {
+        if (!yaConocido) consultadas.add(c.idSet);
+        oficial = await totalOficialSet(idioma, c.idSet);
+      }
       (oficial == total ? coinciden : resto).add(c);
     }
     return [...coinciden, ...resto];
   }
 
-  final Map<String, int?> _totales = {};
+  /// Totales ya obtenidos. Solo se guardan los que se leyeron bien, para
+  /// reintentar una expansión si TCGdex falló la vez anterior.
+  final Map<String, int> _totales = {};
 
   /// Cantidad oficial de cartas de una expansión (el número tras la barra).
   Future<int?> totalOficialSet(Idioma idioma, String idSet) async {
     final clave = '${idioma.codigoTcgdex}/$idSet';
-    if (_totales.containsKey(clave)) return _totales[clave];
+    final guardado = _totales[clave];
+    if (guardado != null) return guardado;
     final uri = _base.resolve('${idioma.codigoTcgdex}/sets/${Uri.encodeComponent(idSet)}');
-    int? total;
     try {
       final datos = jsonDecode(await _http.obtenerTexto(uri, fuente: _fuente));
       final conteo = datos is Map ? datos['cardCount'] : null;
-      total = conteo is Map && conteo['official'] is int ? conteo['official'] as int : null;
+      final total = conteo is Map && conteo['official'] is int ? conteo['official'] as int : null;
+      if (total != null) _totales[clave] = total;
+      return total;
     } on FuenteNoDisponible {
-      total = null;
+      return null;
     }
-    return _totales[clave] = total;
   }
 
   Future<List<ResultadoTcgdex>> _buscar(Idioma idioma, String nombre, String? numeroLocal) async {

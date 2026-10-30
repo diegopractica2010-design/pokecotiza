@@ -172,6 +172,34 @@ void main() {
     }
   });
 
+  test('TCGdex limita cuántas expansiones consulta por búsqueda', () async {
+    var consultasSet = 0;
+    final cartas = [for (var i = 0; i < 20; i++) '{"id":"set$i-1","localId":"1","name":"X"}'].join(',');
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        if (req.url.path.endsWith('/cards')) return http.Response('[$cartas]', 200);
+        consultasSet++;
+        return http.Response('{"cardCount":{"official":131}}', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'X', numeroLocal: '1', totalSet: 131);
+    expect(r, hasLength(20));
+    expect(consultasSet, TcgdexCliente.maxExpansionesPorBusqueda);
+  });
+
+  test('TCGdex reintenta el total de una expansión si antes falló', () async {
+    var fallar = true;
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient(
+          (req) async => fallar ? http.Response('', 503) : http.Response('{"cardCount":{"official":131}}', 200)),
+    ));
+    expect(await cliente.totalOficialSet(Idioma.ingles, 'sm6'), isNull);
+    fallar = false;
+    expect(await cliente.totalOficialSet(Idioma.ingles, 'sm6'), 131);
+  });
+
   group('mindicador', () {
     test('lee dólar y euro', () {
       final t = leerMindicador(fixture('mindicador.json'));

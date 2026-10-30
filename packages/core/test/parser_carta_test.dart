@@ -68,6 +68,12 @@ G SV2a 025/165
       expect(d.numero, '1/131');
     });
 
+    test('reconoce códigos de set en minúscula si llevan dígitos', () {
+      final d = leerTextoCarta('ピカチュウ\nHP 70\nG sv2a 025/165');
+      expect(d.codigoSet, 'sv2a');
+      expect(d.regulacion, 'G');
+    });
+
     test('texto sin datos reconocibles no falla', () {
       final d = leerTextoCarta('   \n\n');
       expect(d.nombre, isNull);
