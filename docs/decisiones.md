@@ -25,3 +25,7 @@
 | 21 | 2026-10-30 | Acabado de la carta (normal / holo / reverse holo) en vez de "es holo" | En la prueba real, el `-holo` de Cardmarket para una Full Art valía un tercio del precio normal: corresponde a reverse holo (deducción, no documentado) | Un booleano "holo" |
 | 22 | 2026-10-30 | Si TCGplayer no tiene la variante del acabado, se omite | Mezclar acabados da precios engañosos | Usar cualquier variante disponible |
 | 23 | 2026-10-30 | El tipo de cambio cae al último valor conocido si mindicador.cl no responde | El servicio no respondió varias veces el 2026-10-30 | Fallar la cotización completa |
+| 24 | 2026-10-30 | Cliente REST propio para Google Sheets (sin el paquete `googleapis`) | Se usan 7 operaciones; menos dependencias y el token lo entrega cada plataforma | Paquete `googleapis` completo |
+| 25 | 2026-10-30 | Escribir con RAW y leer con UNFORMATTED_VALUE | Evita que Google convierta "007/091" en fecha y que los números lleguen con formato regional | USER_ENTERED / FORMATTED_VALUE |
+| 26 | 2026-10-30 | La app crea la planilla y usa el permiso `drive.file` | Acceso solo a archivos de la app; el mismo permiso sirve para las fotos | Permiso `spreadsheets` (todas las planillas del usuario) |
+| 27 | 2026-10-30 | Eliminar una carta conserva su historial de precios | El historial sirve para ver la evolución de la colección | Borrar también sus precios |

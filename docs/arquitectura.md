@@ -89,7 +89,9 @@ Planilla única con pestañas:
 | `Coleccion` | carta física | id, tcgmatch_id, tcgdex_id, acabado (normal/holo/reverse holo), nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
 | `Precios` | cotización (historial, solo se agregan filas) | id_carta, fecha, mercado, precio, moneda, precio_clp, tipo (venta/oferta), url |
 | `Resumen` | día | fecha, valor_total_clp (fórmulas) |
-| `Config` | parámetro | mercados activos, tipo de cambio, etc. |
+| `Config` | parámetro | versión del esquema, último tipo de cambio |
+
+> Columnas definitivas en [fase-3-planilla.md](fase-3-planilla.md).
 
 - **App:** inicia sesión con la cuenta de Google del usuario (OAuth) y lee y escribe la planilla.
 - **Fotos:** se suben a una carpeta `PokeCotiza/fotos` en el Google Drive del usuario; la columna `foto` guarda el enlace. Se pide solo el permiso de Drive que da acceso a los archivos creados por la app (`drive.file`), no a todo el Drive.

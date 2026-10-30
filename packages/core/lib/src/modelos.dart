@@ -79,6 +79,8 @@ class CartaColeccion {
     this.tcgdexId,
     this.tcgmatchId,
     this.valorManualClp,
+    this.fotoUrl,
+    this.fechaAlta,
   });
 
   final String id;
@@ -102,6 +104,10 @@ class CartaColeccion {
 
   /// Valor ingresado a mano (se usa para cartas gradeadas).
   final int? valorManualClp;
+
+  /// Enlace a la foto en Google Drive.
+  final String? fotoUrl;
+  final DateTime? fechaAlta;
 }
 
 /// Un precio obtenido de una fuente.

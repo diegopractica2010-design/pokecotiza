@@ -2,7 +2,7 @@
 
 App para **Android y Windows** que valoriza una colección de cartas Pokémon TCG: identifica cada carta (foto, búsqueda manual o planilla), la cotiza en mercados de Chile y del mundo, y guarda la colección y el historial de precios en **Google Sheets**.
 
-> **Estado:** fase 2 (núcleo) en curso. Fases 0 y 1 cerradas. Ver [plan de trabajo](docs/plan-de-trabajo.md).
+> **Estado:** fase 3 (Google Sheets) en curso. Fases 0, 1 y 2 cerradas. Ver [plan de trabajo](docs/plan-de-trabajo.md).
 
 ## Qué hará
 - **Identificar cartas**
