@@ -73,7 +73,7 @@ Cada consulta pasa por:
 ### 2b. Cálculo del valor
 Por carta se guardan dos valores en CLP:
 - **Promedio publicado:** promedio de las ofertas vigentes en los mercados activos, descartando extremos (método por definir, p. ej. quitar el 10 % más alto y más bajo).
-- **Promedio de ventas reales:** promedio de ventas cerradas en una ventana de tiempo (p. ej. 30 días), solo de fuentes que entreguen ventas.
+- **Mediana de ventas reales:** mediana de ventas cerradas en una ventana de tiempo (p. ej. 30 días), solo de fuentes que entreguen ventas.
 Ambos se filtran por idioma, condición y gradeo de la carta. El valor de la colección es la suma de cada uno.
 
 ### 2c. TCGmatch: vinculación de cartas

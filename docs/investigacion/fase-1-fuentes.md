@@ -48,7 +48,7 @@ Las páginas son Next.js y traen los datos en `<script id="__NEXT_DATA__">` (JSO
 Con 60 cartas, vincularlas es un trabajo de una sola vez de unos minutos.
 
 ### Limitaciones
-- TCGmatch entrega **mediana** de ventas, no promedio. Se propone usar la mediana (menos sensible a ventas atípicas), mostrada como "precio de ventas reales".
+- TCGmatch entrega **mediana** de ventas, no promedio. Decidido: se usa la mediana (menos sensible a ventas atípicas), mostrada como "precio de ventas reales".
 - Los precios agregados vienen por **idioma**, no por **condición**. Para precio por condición habría que leer publicaciones individuales; queda para después.
 - Si TCGmatch cambia su estructura, el adaptador deja de funcionar; se detecta con pruebas sobre páginas guardadas.
 

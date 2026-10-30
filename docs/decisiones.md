@@ -16,3 +16,4 @@
 | 12 | 2026-10-30 | TCGmatch se vincula carta por carta y se lee solo `/producto/catalogo/{id}` | Su búsqueda depende de `/api/` (excluida por robots.txt); 60 cartas se vinculan en minutos | Usar su API interna; recorrer los sitemaps (~790 mil publicaciones) |
 | 13 | 2026-10-30 | TCGdex como catálogo principal (EN/ES/JA) y fuente de Cardmarket/TCGplayer | Funciona sin clave, tiene japonés y español, y precios recientes | pokemontcg.io (solo inglés; Cardmarket desactualizado en la prueba) |
 | 14 | 2026-10-30 | Tipo de cambio desde mindicador.cl | API pública chilena, probada | — |
+| 15 | 2026-10-30 | Ventas reales se expresan como mediana | Es lo que entrega TCGmatch y resiste ventas atípicas | Promedio |

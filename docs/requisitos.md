@@ -19,7 +19,7 @@ Código con todos los derechos reservados (ver `LICENSE`); se busca poder comerc
 | RF-03 | Confirmar o corregir la carta detectada antes de guardarla (elegir entre candidatas) | Android, Windows | Alta |
 | RF-04 | Importar cartas desde un Excel (.xlsx) o una hoja de Google Sheets | Windows | Media |
 | RF-05 | Cotizar una carta en varios mercados y mostrar el precio original y en CLP | Android, Windows | Alta |
-| RF-05b | Calcular dos valores por carta: **promedio de precios publicados** y **promedio de ventas reales** (cuando la fuente las entregue) | Todas | Alta |
+| RF-05b | Calcular dos valores por carta: **promedio de precios publicados** y **mediana de ventas reales** (cuando la fuente las entregue) | Todas | Alta |
 | RF-06 | Guardar la colección y las cotizaciones en Google Sheets | Android, Windows | Alta |
 | RF-07 | Ver el valor total de la colección | Android, Windows | Alta |
 | RF-08 | Actualizar a diario los precios de toda la colección, sin servidor pagado | GitHub Actions | Media |

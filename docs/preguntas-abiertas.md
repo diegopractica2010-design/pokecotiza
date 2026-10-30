@@ -10,10 +10,10 @@
 | Licencia | Todos los derechos reservados, para poder comercializarlo después (ver `LICENSE`) |
 | Condición de las cartas | Sí, se registra por carta (NM por defecto) |
 | Fotos de las cartas | Sí, en Google Drive |
+| Ventas reales: ¿mediana o promedio? | Mediana (lo que entrega TCGmatch) |
 
 ## Pendientes para el dueño del proyecto
-1. ¿Aceptas usar la **mediana** de ventas (lo que entrega TCGmatch) en vez del promedio?
-2. ¿Envías el correo a TCGmatch (borrador en `investigacion/contacto-tcgmatch.md`)? Recomendado antes de comercializar.
+1. ¿Envías el correo a TCGmatch (borrador en `investigacion/contacto-tcgmatch.md`)? Recomendado antes de comercializar.
 
 ## Técnicas (a verificar)
 - Estado actual y límites gratuitos de pokemontcg.io, pokemontcgapi.com y TCGdex.
