@@ -65,6 +65,9 @@ abstract class Almacen {
   Future<void> eliminarCarta(String id);
   Future<Map<String, CotizacionGuardada>> leerCotizaciones();
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c);
+
+  /// Olvida la última cotización de una carta (por ejemplo, si cambió de carta).
+  Future<void> eliminarCotizacion(String idCarta);
   Future<TipoCambio?> leerTipoCambio();
   Future<void> guardarTipoCambio(TipoCambio t);
 
@@ -187,6 +190,13 @@ class AlmacenLocal implements Almacen {
       });
 
   @override
+  Future<void> eliminarCotizacion(String idCarta) => _enCola(() async {
+        final datos = await _leer();
+        (datos['cotizaciones'] as Map?)?.remove(idCarta);
+        await _escribir(datos);
+      });
+
+  @override
   Future<TipoCambio?> leerTipoCambio() async {
     final t = (await _leer())['tipoCambio'];
     return t is Map<String, dynamic> ? TipoCambio.desdeJson(t) : null;
@@ -246,6 +256,9 @@ class AlmacenPlanilla implements Almacen {
 
   @override
   Future<Map<String, CotizacionGuardada>> leerCotizaciones() => cache.leerCotizaciones();
+
+  @override
+  Future<void> eliminarCotizacion(String idCarta) => cache.eliminarCotizacion(idCarta);
 
   @override
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async {

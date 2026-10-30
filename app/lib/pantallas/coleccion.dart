@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pokecotiza_core/pokecotiza_core.dart';
 
+import 'package:file_picker/file_picker.dart';
+
 import '../main.dart';
+import '../servicios/excel_io.dart';
 import '../servicios/estado.dart';
 import '../util/formato.dart';
 import 'agregar.dart';
@@ -43,6 +46,16 @@ class PantallaColeccion extends StatelessWidget {
                     ),
                   ),
                 ),
+              PopupMenuButton<String>(
+                tooltip: 'Más opciones',
+                // Importar mientras carga o actualiza podría perder lo importado.
+                enabled: !estado.cargando && progreso == null,
+                onSelected: (o) => o == 'importar' ? _importar(context) : _exportar(context),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'importar', child: Text('Importar desde Excel')),
+                  PopupMenuItem(value: 'exportar', child: Text('Exportar a Excel')),
+                ],
+              ),
               IconButton(
                 tooltip: 'Actualizar precios',
                 onPressed: progreso != null || estado.cartas.isEmpty ? null : estado.actualizarPrecios,
@@ -93,6 +106,52 @@ class PantallaColeccion extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+extension _Excel on PantallaColeccion {
+  void _avisar(BuildContext context, String texto) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto), duration: const Duration(seconds: 6)));
+
+  Future<void> _importar(BuildContext context) async {
+    try {
+      final archivos = await FilePicker.pickFiles(
+          dialogTitle: 'Elige el Excel con tus cartas', type: FileType.custom, allowedExtensions: ['xlsx']);
+      if (archivos.isEmpty) return;
+      final filas = leerXlsx(await archivos.first.xFile.readAsBytes());
+      final r = importarFilas(filas);
+      final resultado = await estado.importar(r.cartas);
+      if (!context.mounted) return;
+      final problemas = [
+        ...r.invalidas.map((f) => f.toString()),
+        ...resultado.fallidas.entries.map((e) => '${e.key}: no se pudo guardar (${e.value})'),
+      ];
+      _avisar(
+          context,
+          'Se importaron ${resultado.guardadas} cartas.'
+          '${problemas.isEmpty ? '' : ' ${problemas.length} con problemas:\n${problemas.take(3).join('\n')}'}'
+          '${resultado.fallidas.isEmpty ? '' : '\nPuedes reintentar con el mismo archivo: no se duplican.'}'
+          '${resultado.guardadas > 0 ? '\nToca "Actualizar precios" para cotizarlas.' : ''}');
+    } on Object catch (e) {
+      if (context.mounted) _avisar(context, 'No se pudo importar: $e');
+    }
+  }
+
+  Future<void> _exportar(BuildContext context) async {
+    try {
+      final filas = exportarFilas(estado.cartas, {for (final e in estado.cotizaciones.entries) e.key: e.value.valor});
+      final destino = await FilePicker.saveFile(
+        dialogTitle: 'Guardar colección',
+        fileName: 'pokecotiza-coleccion.xlsx',
+        bytes: escribirXlsx(filas),
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+      );
+      if (destino != null && context.mounted) _avisar(context, 'Colección exportada (${estado.cartas.length} cartas).');
+    } on Object catch (e) {
+      if (context.mounted) _avisar(context, 'No se pudo exportar: $e');
+    }
   }
 }
 

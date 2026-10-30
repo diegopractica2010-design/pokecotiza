@@ -32,6 +32,8 @@ class AlmacenMemoria implements Almacen {
   @override
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async => cots[idCarta] = c;
   @override
+  Future<void> eliminarCotizacion(String idCarta) async => cots.remove(idCarta);
+  @override
   Future<TipoCambio?> leerTipoCambio() async => cambio;
   @override
   Future<void> guardarTipoCambio(TipoCambio t) async => cambio = t;
