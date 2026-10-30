@@ -11,6 +11,7 @@ Lógica de PokeCotiza sin interfaz gráfica. La usan la app (Flutter) y, más ad
 | `lib/src/fuentes/tcgmatch.dart` | Precios en CLP por idioma y mediana de ventas desde páginas públicas de TCGmatch. No usa `/api/` |
 | `lib/src/fuentes/mindicador.dart` | Dólar y euro en CLP, con respaldo al último valor conocido |
 | `lib/src/valorizacion.dart` | Valor por carta (mediana publicada y de ventas reales) y total de la colección |
+| `lib/src/planilla/` | Colección, historial de precios, resumen y tipo de cambio en Google Sheets |
 | `lib/src/http/cliente_cortes.dart` | Cliente HTTP con pausa entre peticiones al mismo sitio |
 
 ## Uso local

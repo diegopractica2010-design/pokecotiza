@@ -6,9 +6,9 @@ Cada fase termina con algo usable y se revisa antes de pasar a la siguiente.
 |---|---|---|---|
 | **0. Levantamiento y diseño** ✅ | Definir qué se construye | README, requisitos, arquitectura, mercados, plan, plantillas de issues | — |
 | **1. Investigación de fuentes** ✅ | Validar cada fuente antes de programar | Tabla de mercados actualizada con API/ToS/límites, más una prueba mínima de cada una | 0 |
-| **2. Núcleo** 🚧 | Lógica sin interfaz | `packages/core`: modelos, parser de carta, clientes TCGdex/TCGmatch/mindicador, valorización, pruebas, CI. Ver [estado de la fase 2](fase-2-nucleo.md) | 1 |
-| **3. Google Sheets** | Persistencia compartida | Plantilla de la planilla, inicio de sesión con Google, lectura y escritura de Colección y Precios | 2 |
-| **4. App: ingreso manual y cotización** | Primera versión usable | Pantallas Colección / Agregar (manual) / Confirmar / Detalle, en Android y Windows | 2, 3 |
+| **2. Núcleo** ✅ | Lógica sin interfaz | `packages/core`: modelos, parser de carta, clientes TCGdex/TCGmatch/mindicador, valorización, pruebas, CI. Ver [estado de la fase 2](fase-2-nucleo.md) | 1 |
+| **3. Google Sheets** 🚧 | Persistencia compartida | Estructura de la planilla y lectura/escritura de Colección, Precios, Resumen y Config en el núcleo. Ver [fase 3](fase-3-planilla.md). El inicio de sesión con Google pasa a la fase 4 | 2 |
+| **4. App: ingreso manual y cotización** | Primera versión usable | Inicio de sesión con Google y prueba contra Sheets real; pantallas Colección / Agregar (manual) / Confirmar / Detalle, en Android y Windows | 2, 3 |
 | **5. Mercados internacionales** | Precios de referencia | Adaptadores TCGplayer y Cardmarket (vía API) | 1, 2 |
 | **6. Tarea diaria** | Historial automático | `tools/actualizador` + workflow de GitHub Actions + pestaña Resumen | 3, 5 |
 | **7. Cámara (Android)** | Escanear cartas | OCR + parser + resolución de candidatas | 2, 4 |
