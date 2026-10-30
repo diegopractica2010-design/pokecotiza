@@ -1,3 +1,5 @@
+// Google Sheets simulado para pruebas (de este paquete y de la app). No se
+// usa en producción.
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

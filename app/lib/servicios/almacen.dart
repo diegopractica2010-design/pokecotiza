@@ -192,3 +192,65 @@ class AlmacenLocal implements Almacen {
         await _escribir(datos);
       });
 }
+
+/// Colección en Google Sheets. Las últimas cotizaciones se guardan además en
+/// el dispositivo ([cache]) para abrir la app sin consultar la planilla de
+/// precios; cada cotización nueva se agrega al historial de la planilla.
+class AlmacenPlanilla implements Almacen {
+  AlmacenPlanilla(this.planilla, this.cache);
+
+  final PlanillaColeccion planilla;
+  final AlmacenLocal cache;
+  TipoCambio? _cambio;
+
+  @override
+  String get descripcion => 'Google Sheets';
+
+  @override
+  Future<({List<CartaColeccion> cartas, List<FilaInvalida> invalidas})> leerCartas() => planilla.leerColeccion();
+
+  @override
+  Future<void> guardarCarta(CartaColeccion carta) => planilla.guardarCarta(carta);
+
+  @override
+  Future<void> eliminarCarta(String id) async {
+    await planilla.eliminarCarta(id);
+    await cache.eliminarCarta(id); // borra su cotización guardada en el dispositivo
+  }
+
+  @override
+  Future<Map<String, CotizacionGuardada>> leerCotizaciones() => cache.leerCotizaciones();
+
+  @override
+  Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async {
+    await cache.guardarCotizacion(idCarta, c);
+    final cambio = _cambio ?? await leerTipoCambio();
+    if (cambio != null && c.cotizaciones.isNotEmpty) {
+      await planilla.registrarPrecios(idCarta, c.cotizaciones, cambio, fecha: c.fecha);
+    }
+  }
+
+  @override
+  Future<TipoCambio?> leerTipoCambio() async =>
+      _cambio ??= await planilla.leerTipoCambio() ?? await cache.leerTipoCambio();
+
+  @override
+  Future<void> guardarTipoCambio(TipoCambio t) async {
+    _cambio = t;
+    await planilla.guardarTipoCambio(t);
+    await cache.guardarTipoCambio(t);
+  }
+}
+
+/// Sube a la planilla las cartas del dispositivo que aún no estén en ella.
+/// Devuelve cuántas subió.
+Future<int> migrarALaPlanilla(Almacen origen, PlanillaColeccion destino) async {
+  final enPlanilla = (await destino.leerColeccion()).cartas.map((c) => c.id).toSet();
+  var subidas = 0;
+  for (final c in (await origen.leerCartas()).cartas) {
+    if (enPlanilla.contains(c.id)) continue;
+    await destino.guardarCarta(c);
+    subidas++;
+  }
+  return subidas;
+}

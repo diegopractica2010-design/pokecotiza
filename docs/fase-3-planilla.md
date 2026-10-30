@@ -24,7 +24,7 @@ Reglas: las columnas solo se agregan al final (si no, se rompen planillas existe
 - API de Google Sheets v4 por REST, sin librerías extra. Operaciones verificadas contra el documento de descubrimiento oficial (revisión 20261026).
 - Escritura con `valueInputOption=RAW`: Google no reinterpreta los valores. Por ejemplo, "007/091" no se convierte en fecha.
 - Lectura con `valueRenderOption=UNFORMATTED_VALUE`: los números llegan como números y no con formato regional ("1.109,37").
-- Permiso previsto: `drive.file` (la app solo ve los archivos que ella crea). Según el documento oficial, este permiso sirve para crear la planilla y para leer y escribir filas.
+- Permiso: `spreadsheets` (ver decisión 32; antes se había previsto `drive.file`).
 - El token lo entrega quien use el núcleo: en la app, el inicio de sesión con Google (fase 4); en la tarea diaria, una cuenta de servicio (fase 6).
 
 ## Revisión de Codex (PR #5)

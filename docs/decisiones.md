@@ -33,3 +33,6 @@
 | 29 | 2026-10-30 | La app guarda primero en el dispositivo, con el mismo formato de fila que la planilla | Se puede probar sin credenciales de Google y pasar después a Sheets sin convertir datos | Exigir Google desde el inicio |
 | 30 | 2026-10-30 | GitHub Actions compila el APK y la versión de Windows | Este entorno es Linux, sin Android SDK ni Windows | Compilar a mano en el PC del dueño |
 | 31 | 2026-10-30 | En TCGmatch se pega el enlace; el navegador dentro de la app queda para después | `webview_flutter` no es compatible con Windows; pegar el enlace funciona en ambos | `flutter_inappwebview` desde el inicio |
+| 32 | 2026-10-30 | Permiso `spreadsheets` en vez de `drive.file` (reemplaza la decisión 26 para la planilla) | Con `drive.file`, no está confirmado que el otro dispositivo pueda abrir la planilla creada en el primero; la vía oficial exige un selector de archivos de Google | `drive.file` + Google Picker |
+| 33 | 2026-10-30 | Credenciales de Google por `--dart-define` desde variables y secretos del repositorio | No quedan en el código; sin ellas la app funciona solo en el dispositivo | Archivo de configuración en el repositorio |
+| 34 | 2026-10-30 | La última cotización de cada carta se guarda también en el dispositivo | La app abre rápido sin leer todo el historial de la planilla | Leer siempre de la planilla |

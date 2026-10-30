@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:pokecotiza_core/pokecotiza_core.dart';
 
+import '../main.dart';
 import '../servicios/estado.dart';
 import '../util/formato.dart';
 import 'agregar.dart';
+import 'ajustes.dart';
 import 'detalle.dart';
 
 class PantallaColeccion extends StatelessWidget {
-  const PantallaColeccion({super.key, required this.estado});
+  const PantallaColeccion({super.key, required this.estado, this.contexto});
 
   final EstadoApp estado;
+
+  /// Null en pruebas: oculta Ajustes.
+  final Contexto? contexto;
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +26,23 @@ class PantallaColeccion extends StatelessWidget {
           appBar: AppBar(
             title: const Text('PokeCotiza'),
             actions: [
+              if (contexto != null)
+                IconButton(
+                  tooltip: 'Ajustes',
+                  icon: const Icon(Icons.settings),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PantallaAjustes(
+                        estado: estado,
+                        ajustes: contexto!.ajustes,
+                        local: contexto!.local,
+                        sesion: contexto!.sesion,
+                        crearSheets: contexto!.crearSheets,
+                      ),
+                    ),
+                  ),
+                ),
               IconButton(
                 tooltip: 'Actualizar precios',
                 onPressed: progreso != null || estado.cartas.isEmpty ? null : estado.actualizarPrecios,
@@ -42,6 +64,11 @@ class PantallaColeccion extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     children: [
                       _Total(estado: estado),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, left: 4),
+                        child: Text('Guardada: ${estado.almacen.descripcion}',
+                            style: Theme.of(context).textTheme.bodySmall),
+                      ),
                       if (progreso != null) ...[
                         const SizedBox(height: 8),
                         LinearProgressIndicator(value: progreso.$2 == 0 ? null : progreso.$1 / progreso.$2),

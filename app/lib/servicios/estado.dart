@@ -10,7 +10,8 @@ import 'almacen.dart';
 class EstadoApp extends ChangeNotifier {
   EstadoApp({required this.almacen, required this.cotizador, required this.tcgdex, required this.tcgmatch});
 
-  final Almacen almacen;
+  /// Dónde está la colección (dispositivo o Google Sheets). Cambia desde Ajustes.
+  Almacen almacen;
   final Cotizador cotizador;
   final TcgdexCliente tcgdex;
   final TcgmatchCliente tcgmatch;
@@ -117,6 +118,12 @@ class EstadoApp extends ChangeNotifier {
       progreso = null;
       notifyListeners();
     }
+  }
+
+  /// Cambia dónde se guarda la colección y la vuelve a leer.
+  Future<void> cambiarAlmacen(Almacen nuevo) async {
+    almacen = nuevo;
+    await cargar();
   }
 
   Future<void> eliminar(String id) async {
