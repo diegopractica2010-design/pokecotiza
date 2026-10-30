@@ -122,6 +122,24 @@ class EstadoApp extends ChangeNotifier {
     }
   }
 
+  /// Agrega o reemplaza (por id) las cartas importadas. No las cotiza: eso se
+  /// hace con "Actualizar precios". Devuelve cuántas guardó.
+  Future<int> importar(List<CartaColeccion> nuevas) async {
+    var n = 0;
+    for (final c in nuevas) {
+      await almacen.guardarCarta(c);
+      final i = cartas.indexWhere((x) => x.id == c.id);
+      if (i >= 0) {
+        cartas[i] = c;
+      } else {
+        cartas.add(c);
+      }
+      n++;
+    }
+    notifyListeners();
+    return n;
+  }
+
   /// Cambia dónde se guarda la colección y la vuelve a leer.
   Future<void> cambiarAlmacen(Almacen nuevo) async {
     almacen = nuevo;
