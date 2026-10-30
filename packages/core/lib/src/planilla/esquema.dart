@@ -17,6 +17,9 @@ abstract final class Esquema {
     'id', 'nombre', 'idioma', 'codigo_set', 'numero', 'regulacion', 'condicion', 'acabado', //
     'gradeadora', 'nota_gradeo', 'cantidad', 'tcgdex_id', 'tcgmatch_id', 'valor_manual_clp', 'foto_url', 'fecha_alta',
   ];
+
+  /// `fecha`: cuándo se registró. `fecha_fuente`: fecha del dato según la fuente
+  /// (por ejemplo, la última actualización de Cardmarket en TCGdex).
   static const columnasPrecios = [
     'fecha',
     'id_carta',
@@ -26,7 +29,8 @@ abstract final class Esquema {
     'valor',
     'valor_clp',
     'detalle',
-    'url'
+    'url',
+    'fecha_fuente',
   ];
   static const columnasResumen = ['fecha', 'publicado_clp', 'ventas_clp', 'cartas'];
   static const columnasConfig = ['clave', 'valor'];
@@ -40,7 +44,10 @@ abstract final class Esquema {
       };
 
   /// Rango de columnas de una pestaña, por ejemplo "Coleccion!A:P".
-  static String rango(String pestana) => '$pestana!A:${_letra(encabezados(pestana).length)}';
+  static String rango(String pestana) => '$pestana!A:${ultimaColumna(pestana)}';
+
+  /// Letra de la última columna de una pestaña, por ejemplo "P".
+  static String ultimaColumna(String pestana) => _letra(encabezados(pestana).length);
 
   static String _letra(int n) => String.fromCharCode('A'.codeUnitAt(0) + n - 1);
 }
@@ -84,10 +91,14 @@ CartaColeccion filaACarta(List<Object?> fila) {
   String? opcional(int i) => texto(i).isEmpty ? null : texto(i);
   int? entero(int i) {
     final v = i < fila.length ? fila[i] : null;
-    if (v is num) return v.round();
+    if (v is num) {
+      // Un decimal (por ejemplo, cantidad 1,6) es un error de edición: no se redondea.
+      if (v != v.roundToDouble()) throw FormatoInesperado('planilla', '"$v" no es un número entero');
+      return v.toInt();
+    }
     final t = texto(i);
     if (t.isEmpty) return null;
-    return int.tryParse(t) ?? (throw FormatoInesperado('planilla', '"$t" no es un número'));
+    return int.tryParse(t) ?? (throw FormatoInesperado('planilla', '"$t" no es un número entero'));
   }
 
   final id = texto(0);
@@ -133,4 +144,5 @@ List<Object?> cotizacionAFila(String idCarta, Cotizacion c, int valorClp, DateTi
       valorClp,
       c.detalle ?? '',
       c.url?.toString() ?? '',
+      c.fecha?.toUtc().toIso8601String() ?? '',
     ];

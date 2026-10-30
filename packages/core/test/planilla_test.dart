@@ -117,6 +117,49 @@ void main() {
     expect(falso.hojas['Resumen']!.last, ['2026-10-30T00:00:00.000Z', 64783, 45540, 2]);
   });
 
+  test('cantidad con decimales e id repetido se informan como filas inválidas', () async {
+    final p = await PlanillaColeccion.crear(sheets);
+    await p.guardarCarta(lucario);
+    falso.hojas['Coleccion']!.addAll([
+      ['c6', 'Eevee', 'en', '', '', '', 'NM', '', '', '', 1.6],
+      ['c1', 'Lucario GX', 'es'],
+    ]);
+    final leida = await p.leerColeccion();
+    expect(leida.cartas.map((c) => c.id), ['c1']);
+    expect(leida.invalidas.map((f) => f.numeroFila), [3, 4]);
+    expect(leida.invalidas.first.motivo, contains('entero'));
+    expect(leida.invalidas.last.motivo, contains('repetido'));
+  });
+
+  test('el historial conserva la fecha del dato según la fuente', () async {
+    final p = await PlanillaColeccion.crear(sheets);
+    final cambio = TipoCambio(usd: 1000, eur: 1100, fecha: DateTime.utc(2026, 10, 30));
+    final cot = Cotizacion(
+        fuente: 'Cardmarket',
+        tipo: TipoPrecio.ventas,
+        moneda: Moneda.eur,
+        valor: 10,
+        fecha: DateTime.utc(2026, 10, 20));
+    await p.registrarPrecios('c1', [cot], cambio, fecha: DateTime.utc(2026, 10, 30));
+    final h = (await p.historial('c1')).single;
+    expect(h.fecha, DateTime.utc(2026, 10, 30));
+    expect(h.cotizacion.fecha, DateTime.utc(2026, 10, 20));
+  });
+
+  test('preparar estructura no sobrescribe una fila 1 con datos', () async {
+    final p = await PlanillaColeccion.crear(sheets);
+    falso.hojas['Resumen']![0] = ['mis datos', 123];
+    await expectLater(p.prepararEstructura, throwsA(isA<FormatoInesperado>()));
+    expect(falso.hojas['Resumen']![0], ['mis datos', 123]);
+  });
+
+  test('preparar estructura completa encabezados de una versión anterior', () async {
+    final p = await PlanillaColeccion.crear(sheets);
+    falso.hojas['Precios']![0] = Esquema.columnasPrecios.take(9).toList();
+    await p.prepararEstructura();
+    expect(falso.hojas['Precios']![0], Esquema.columnasPrecios);
+  });
+
   test('tipo de cambio se guarda en Config y se recupera', () async {
     final p = await PlanillaColeccion.crear(sheets);
     expect(await p.leerTipoCambio(), isNull);

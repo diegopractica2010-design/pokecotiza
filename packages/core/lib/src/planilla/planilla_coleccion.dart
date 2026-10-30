@@ -29,7 +29,23 @@ class PlanillaColeccion {
         if (!existentes.containsKey(p)) p,
     ]);
     for (final p in Esquema.pestanas) {
-      await _sheets.escribir(idPlanilla, '$p!A1', [Esquema.encabezados(p)]);
+      final esperados = Esquema.encabezados(p);
+      final actual = (await _sheets.leer(idPlanilla, '$p!A1:${Esquema.ultimaColumna(p)}1')).firstOrNull ?? const [];
+      final textos = [for (final v in actual) '${v ?? ''}'.trim()];
+      if (textos.every((t) => t.isEmpty)) {
+        await _sheets.escribir(idPlanilla, '$p!A1', [esperados]);
+        continue;
+      }
+      // Encabezados de una versión anterior (prefijo): se completan las columnas nuevas.
+      var esPrefijo = textos.length <= esperados.length;
+      for (var i = 0; esPrefijo && i < textos.length; i++) {
+        esPrefijo = textos[i] == esperados[i];
+      }
+      if (!esPrefijo) {
+        throw FormatoInesperado('planilla',
+            'la fila 1 de la pestaña "$p" no tiene los encabezados esperados; no se modificó para no perder datos');
+      }
+      if (textos.length < esperados.length) await _sheets.escribir(idPlanilla, '$p!A1', [esperados]);
     }
     await _escribirConfig({'version_esquema': '${Esquema.versionEsquema}'});
   }
@@ -40,11 +56,21 @@ class PlanillaColeccion {
     final filas = await _sheets.leer(idPlanilla, Esquema.rango(Esquema.coleccion));
     final cartas = <CartaColeccion>[];
     final invalidas = <FilaInvalida>[];
+    final vistos = <String, int>{};
     for (var i = 1; i < filas.length; i++) {
       final fila = filas[i];
       if (fila.every((v) => v == null || '$v'.trim().isEmpty)) continue;
       try {
-        cartas.add(filaACarta(fila));
+        final carta = filaACarta(fila);
+        // Dos dispositivos que agregan la misma carta a la vez pueden duplicarla
+        // (Google Sheets no permite evitarlo): se usa la primera y se avisa de la repetida.
+        final previa = vistos[carta.id];
+        if (previa != null) {
+          invalidas.add(FilaInvalida(i + 1, 'id "${carta.id}" repetido (ya está en la fila $previa)'));
+          continue;
+        }
+        vistos[carta.id] = i + 1;
+        cartas.add(carta);
       } on FormatoInesperado catch (e) {
         invalidas.add(FilaInvalida(i + 1, e.mensaje));
       }
@@ -89,6 +115,7 @@ class PlanillaColeccion {
       String t(int i) => i < f.length && f[i] != null ? '${f[i]}' : '';
       if (t(1) != idCarta) continue;
       final fecha = DateTime.tryParse(t(0));
+      final fechaFuente = DateTime.tryParse(t(9));
       final tipo = TipoPrecio.values.where((x) => x.name == t(3)).firstOrNull;
       final moneda = Moneda.values.where((x) => x.name == t(4).toLowerCase()).firstOrNull;
       final valor = f.length > 5 && f[5] is num ? (f[5] as num).toDouble() : double.tryParse(t(5));
@@ -102,7 +129,7 @@ class PlanillaColeccion {
           tipo: tipo,
           moneda: moneda,
           valor: valor,
-          fecha: fecha,
+          fecha: fechaFuente ?? fecha,
           detalle: t(7).isEmpty ? null : t(7),
           url: t(8).isEmpty ? null : Uri.tryParse(t(8)),
         ),

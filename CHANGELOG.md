@@ -2,7 +2,7 @@
 
 ## [Sin publicar]
 ### Añadido
-- Fase 3: módulo de planilla (Google Sheets) en el núcleo: colección, historial de precios, resumen y tipo de cambio, con 8 pruebas.
+- Fase 3: módulo de planilla (Google Sheets) en el núcleo: colección, historial de precios, resumen y tipo de cambio, con 12 pruebas (incluye correcciones de la revisión de Codex).
 - Página de pruebas del núcleo (lector compilado a JavaScript y generador de datos).
 - Fase 2: paquete `pokecotiza_core` (modelos, lector de texto de cartas, clientes TCGdex/TCGmatch/mindicador, valorización) con 24 pruebas y CI.
 - Fase 1 cerrada: gradeadas manuales, eBay descartado, Mercado Libre pospuesto, TCGdex aprobado.

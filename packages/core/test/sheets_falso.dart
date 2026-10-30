@@ -68,16 +68,19 @@ class SheetsFalso {
 
   (String, int, int?) _partes(String rango) {
     // "Hoja!A:P", "Hoja!A:A", "Hoja!A5"
-    final m = RegExp(r'^(\w+)!([A-Z])(\d*)(?::([A-Z]))?$').firstMatch(rango)!;
+    final m = RegExp(r'^(\w+)!([A-Z])(\d*)(?::([A-Z])\d*)?$').firstMatch(rango)!;
     final fila = m.group(3)!.isEmpty ? 0 : int.parse(m.group(3)!) - 1;
     final ultimaCol = m.group(4) == null ? null : m.group(4)!.codeUnitAt(0) - 65;
     return (m.group(1)!, fila, ultimaCol);
   }
 
   http.Response _leer(String rango) {
-    final (hoja, _, ultimaCol) = _partes(rango);
+    final (hoja, fila, ultimaCol) = _partes(rango);
+    // "Hoja!A1:J1" lee solo esa fila; "Hoja!A:P" lee todas.
+    final soloUna = RegExp(r'\d+:[A-Z]\d+$').hasMatch(rango);
+    final origen = soloUna ? hojas[hoja]!.skip(fila).take(1) : hojas[hoja]!;
     final filas = [
-      for (final f in hojas[hoja]!) _recortar(ultimaCol == null ? f : f.take(ultimaCol + 1).toList()),
+      for (final f in origen) _recortar(ultimaCol == null ? f : f.take(ultimaCol + 1).toList()),
     ];
     while (filas.isNotEmpty && filas.last.isEmpty) {
       filas.removeLast();
