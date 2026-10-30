@@ -14,7 +14,7 @@ Código con todos los derechos reservados (ver `LICENSE`); se busca poder comerc
 ## Requisitos funcionales
 | ID | Requisito | Plataforma | Prioridad |
 |---|---|---|---|
-| RF-01 | Ingresar una carta a mano (nombre, set, número, idioma, condición, gradeo) | Android, Windows | Alta |
+| RF-01 | Ingresar una carta a mano (nombre, set, número, idioma, condición, acabado, gradeo) | Android, Windows | Alta |
 | RF-02 | Ingresar una carta con una foto: leer nombre, PS, código de set, letra de regulación y número | Android | Alta |
 | RF-03 | Confirmar o corregir la carta detectada antes de guardarla (elegir entre candidatas) | Android, Windows | Alta |
 | RF-04 | Importar cartas desde un Excel (.xlsx) o una hoja de Google Sheets | Windows | Media |

@@ -21,3 +21,7 @@
 | 17 | 2026-10-30 | Cartas gradeadas con valor manual por ahora | No hay fuente pública gratuita: TCGmatch las sirve vía `/api/` y eBay restringe su API de ventas | Scrapear la API de TCGmatch; API de eBay |
 | 18 | 2026-10-30 | Mercado Libre pospuesto a la fase 9 | Su API exige autenticación (403 sin token) | Scrapear su HTML |
 | 19 | 2026-10-30 | Cardmarket `avg30` como respaldo de ventas reales | Según fuentes secundarias es promedio de ventas a 30 días | Usar `trend` |
+| 20 | 2026-10-30 | Dart puro para el núcleo, en `packages/core` | Lo comparten la app Flutter y la tarea diaria | Lógica dentro de la app |
+| 21 | 2026-10-30 | Acabado de la carta (normal / holo / reverse holo) en vez de "es holo" | En la prueba real, el `-holo` de Cardmarket para una Full Art valía un tercio del precio normal: corresponde a reverse holo (deducción, no documentado) | Un booleano "holo" |
+| 22 | 2026-10-30 | Si TCGplayer no tiene la variante del acabado, se omite | Mezclar acabados da precios engañosos | Usar cualquier variante disponible |
+| 23 | 2026-10-30 | El tipo de cambio cae al último valor conocido si mindicador.cl no responde | El servicio no respondió varias veces el 2026-10-30 | Fallar la cotización completa |
