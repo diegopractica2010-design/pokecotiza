@@ -20,6 +20,9 @@ class DatosLeidos {
   /// Número dentro de la expansión, sin el total: "025/165" → "025".
   String? get numeroLocal => numero?.split('/').first;
 
+  /// Total impreso de la expansión: "025/165" → 165.
+  int? get totalSet => numero == null ? null : int.tryParse(numero!.split('/').last);
+
   @override
   String toString() =>
       'DatosLeidos(nombre: $nombre, ps: $ps, numero: $numero, set: $codigoSet, regulacion: $regulacion)';
@@ -28,14 +31,16 @@ class DatosLeidos {
 final _reNumero = RegExp(r'(\d{1,3})\s*/\s*(\d{1,3})');
 final _rePs = RegExp(r'(?:\b(?:PS|HP)\s*(\d{2,3})\b)|(?:\b(\d{2,3})\s*(?:PS|HP)\b)', caseSensitive: false);
 final _reRegulacion = RegExp(r'^[A-Z]$');
-// Códigos de expansión: OBF, PAL, SV3, sv2a, SV4a, MEW...
-final _reCodigoSet = RegExp(r'^[A-Za-z]{2,4}\d{0,2}[a-z]?$');
+// Códigos de expansión: OBF, PAL, MEW, SV3, SV2a, SV4a... Mayúsculas y dígitos,
+// con a lo más una minúscula final, para no confundirlos con el nombre del
+// ilustrador ("Yuka Morii 1/131").
+final _reCodigoSet = RegExp(r'^[A-Z]{2,4}\d{0,2}[a-z]?$');
 const _codigosIdioma = {'EN', 'ES', 'JP', 'JA', 'FR', 'DE', 'IT', 'PT', 'KO'};
 final _reTieneLetra = RegExp(r'\p{L}', unicode: true);
 
 // Líneas que nunca son el nombre: etapa, tipo de carta, textos de reglas.
 final _reNoNombre = RegExp(
-  r'^(basic|básico|basico|stage\s*\d|fase\s*\d|evolves|evoluciona|'
+  r'^(basic|básico|basico|stage\s*\d|fase\s*\d|etapa\s*\d|evolves|evoluciona|'
   r'trainer|entrenador|supporter|partidario|item|objeto|energy|energía|'
   r'たね|1進化|2進化)',
   caseSensitive: false,

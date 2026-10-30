@@ -15,6 +15,9 @@ class ResultadoTcgdex {
   final String nombre;
   final String? imagen;
 
+  /// Id de la expansión: "sv03.5-016" → "sv03.5".
+  String get idSet => id.substring(0, id.lastIndexOf('-'));
+
   /// TCGdex incluye cartas del juego digital TCG Pocket (ids "A1-001",
   /// "P-A-001"), que no son cartas físicas.
   bool get esTcgPocket => RegExp(r'^(A\d|P-A)').hasMatch(id) || (imagen?.contains('/tcgp/') ?? false);
@@ -48,18 +51,71 @@ class TcgdexCliente {
   final Uri _base;
 
   /// Busca cartas físicas por nombre y, opcionalmente, número local
-  /// ("122" o "025"). Si con ceros a la izquierda no hay resultados, reintenta sin ellos.
+  /// ("122" o "025").
+  ///
+  /// El nombre leído de la carta no siempre coincide con el de TCGdex
+  /// ("Lucario-GX" en la carta, "Lucario GX" en TCGdex), así que si no hay
+  /// resultados reintenta: con guiones como espacios, luego solo con la
+  /// primera palabra, y en cada caso también sin ceros a la izquierda en el número.
+  ///
+  /// El filtro de número de TCGdex es aproximado ("1" también trae "102"), así
+  /// que se dejan solo los números exactos. Si se da [totalSet] (el "131" de
+  /// "1/131"), se ponen primero las expansiones con ese total oficial.
   Future<List<ResultadoTcgdex>> buscar({
     required Idioma idioma,
     required String nombre,
     String? numeroLocal,
+    int? totalSet,
   }) async {
-    final resultados = await _buscar(idioma, nombre, numeroLocal);
-    if (resultados.isEmpty && numeroLocal != null && numeroLocal.startsWith('0')) {
-      final sinCeros = numeroLocal.replaceFirst(RegExp(r'^0+(?=\d)'), '');
-      return _buscar(idioma, nombre, sinCeros);
+    final nombres = <String>{
+      nombre.trim(),
+      nombre.replaceAll('-', ' ').replaceAll(RegExp(r'\s+'), ' ').trim(),
+      nombre.trim().split(RegExp(r'[\s-]+')).first,
+    }.where((n) => n.isNotEmpty);
+    final numeros = <String?>{
+      numeroLocal,
+      if (numeroLocal != null) numeroLocal.replaceFirst(RegExp(r'^0+(?=\d)'), ''),
+    };
+    for (final n in nombres) {
+      for (final numero in numeros) {
+        var resultados = await _buscar(idioma, n, numero);
+        if (numeroLocal != null) {
+          resultados = resultados.where((r) => _mismoNumero(r.numeroLocal, numeroLocal)).toList();
+        }
+        if (resultados.isNotEmpty) {
+          return totalSet == null ? resultados : _ordenarPorTotal(idioma, resultados, totalSet);
+        }
+      }
     }
-    return resultados;
+    return const [];
+  }
+
+  Future<List<ResultadoTcgdex>> _ordenarPorTotal(Idioma idioma, List<ResultadoTcgdex> r, int total) async {
+    final coinciden = <ResultadoTcgdex>[];
+    final resto = <ResultadoTcgdex>[];
+    for (final c in r) {
+      final oficial = await totalOficialSet(idioma, c.idSet);
+      (oficial == total ? coinciden : resto).add(c);
+    }
+    return [...coinciden, ...resto];
+  }
+
+  final Map<String, int?> _totales = {};
+
+  /// Cantidad oficial de cartas de una expansión (el número tras la barra).
+  Future<int?> totalOficialSet(Idioma idioma, String idSet) async {
+    final clave = '${idioma.codigoTcgdex}/$idSet';
+    if (_totales.containsKey(clave)) return _totales[clave];
+    final uri = _base.resolve('${idioma.codigoTcgdex}/sets/${Uri.encodeComponent(idSet)}');
+    int? total;
+    try {
+      final datos = jsonDecode(await _http.obtenerTexto(uri, fuente: _fuente));
+      final conteo = datos is Map ? datos['cardCount'] : null;
+      total = conteo is Map && conteo['official'] is int ? conteo['official'] as int : null;
+    } on FuenteNoDisponible {
+      total = null;
+    }
+    return _totales[clave] = total;
   }
 
   Future<List<ResultadoTcgdex>> _buscar(Idioma idioma, String nombre, String? numeroLocal) async {
@@ -181,3 +237,8 @@ List<Cotizacion> cotizacionesDesdeTcgdex(Object? pricing, {Acabado acabado = Aca
 }
 
 double? _numero(Object? v) => v is num ? v.toDouble() : null;
+
+bool _mismoNumero(String a, String b) {
+  String sinCeros(String x) => x.replaceFirst(RegExp(r'^0+(?=\d)'), '').toLowerCase();
+  return sinCeros(a) == sinCeros(b);
+}

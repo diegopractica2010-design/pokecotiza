@@ -120,6 +120,40 @@ void main() {
     expect(r.single.id, 'sv3pt5-25');
   });
 
+  test('TCGdex reintenta con el nombre sin guion y luego con la primera palabra', () async {
+    final pedidas = <String?>[];
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        final nombre = req.url.queryParameters['name'];
+        pedidas.add(nombre);
+        return http.Response(
+            nombre == 'Lucario' ? '[{"id":"sm6-122","localId":"122","name":"Lucario GX"}]' : '[]', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.espanol, nombre: 'Lucario-GX', numeroLocal: '122');
+    expect(pedidas, ['Lucario-GX', 'Lucario GX', 'Lucario']);
+    expect(r.single.id, 'sm6-122');
+  });
+
+  test('TCGdex deja solo números exactos y ordena por total de la expansión', () async {
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        if (req.url.path.endsWith('/cards')) {
+          return http.Response(
+              '[{"id":"sm5-1","localId":"1","name":"Exeggcute"},{"id":"sm6-1","localId":"1","name":"Exeggcute"},'
+              '{"id":"bw10-102","localId":"102","name":"Exeggcute"},{"id":"sv08.5-001","localId":"001","name":"Exeggcute"}]',
+              200);
+        }
+        final oficial = {'sm5': 156, 'sm6': 131, 'sv08.5': 131}[req.url.pathSegments.last];
+        return http.Response('{"cardCount":{"official":$oficial}}', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'Exeggcute', numeroLocal: '1', totalSet: 131);
+    expect(r.map((e) => e.id), ['sm6-1', 'sv08.5-001', 'sm5-1']);
+  });
+
   group('mindicador', () {
     test('lee dólar y euro', () {
       final t = leerMindicador(fixture('mindicador.json'));

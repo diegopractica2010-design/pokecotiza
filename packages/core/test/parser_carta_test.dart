@@ -55,6 +55,19 @@ G SV2a 025/165
       expect(d.regulacion, 'H');
     });
 
+    test('no confunde "Etapa 1" con el nombre', () {
+      final d = leerTextoCarta('ETAPA 1\nLucario-GX PS 210\n5ban Graphics 122/131');
+      expect(d.nombre, 'Lucario-GX');
+      expect(d.totalSet, 131);
+    });
+
+    test('no confunde al ilustrador con el código de set', () {
+      final d = leerTextoCarta('BASIC\nExeggcute HP 40\nYuka Morii 1/131');
+      expect(d.codigoSet, isNull);
+      expect(d.regulacion, isNull);
+      expect(d.numero, '1/131');
+    });
+
     test('texto sin datos reconocibles no falla', () {
       final d = leerTextoCarta('   \n\n');
       expect(d.nombre, isNull);
