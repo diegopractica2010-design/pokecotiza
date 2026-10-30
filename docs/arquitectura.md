@@ -76,14 +76,17 @@ Por carta se guardan dos valores en CLP:
 - **Promedio de ventas reales:** promedio de ventas cerradas en una ventana de tiempo (p. ej. 30 días), solo de fuentes que entreguen ventas.
 Ambos se filtran por idioma, condición y gradeo de la carta. El valor de la colección es la suma de cada uno.
 
+### 2c. TCGmatch: vinculación de cartas
+TCGmatch no ofrece búsqueda pública fuera de su API (excluida por robots.txt). Por eso cada carta se vincula una vez: la app abre TCGmatch en un navegador embebido, el usuario abre la carta y la app captura el id desde la URL (o el usuario pega el enlace). Luego se consulta solo `/producto/catalogo/{id}`. Detalle en `investigacion/fase-1-fuentes.md`.
+
 ### 3. Conversión de moneda
-USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. Fuente por verificar (candidato: mindicador.cl).
+USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. Fuente: mindicador.cl (probada el 2026-10-30).
 
 ### 4. Persistencia: Google Sheets
 Planilla única con pestañas:
 | Pestaña | Una fila por | Columnas principales |
 |---|---|---|
-| `Coleccion` | carta física | id, nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
+| `Coleccion` | carta física | id, tcgmatch_id, tcgdex_id, nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
 | `Precios` | cotización (historial, solo se agregan filas) | id_carta, fecha, mercado, precio, moneda, precio_clp, tipo (venta/oferta), url |
 | `Resumen` | día | fecha, valor_total_clp (fórmulas) |
 | `Config` | parámetro | mercados activos, tipo de cambio, etc. |

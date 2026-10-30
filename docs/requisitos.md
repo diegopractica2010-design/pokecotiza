@@ -28,6 +28,7 @@ Código con todos los derechos reservados (ver `LICENSE`); se busca poder comerc
 | RF-11 | Soportar cartas gradeadas (empresa y nota) | Todas | Media |
 | RF-12 | Exportar la colección a Excel | Windows | Baja |
 | RF-13 | Registrar la condición de la carta (NM, LP, MP, HP, DMG) y cotizar según ella; NM por defecto si no se indica | Todas | Alta |
+| RF-15 | Vincular cada carta con su página de TCGmatch (navegador embebido o pegando el enlace) y guardar el id | Android, Windows | Alta |
 | RF-14 | Guardar una foto de cada carta en Google Drive y enlazarla desde la planilla | Android (cámara), Windows (subir archivo) | Media |
 
 ## Requisitos no funcionales

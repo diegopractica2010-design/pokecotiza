@@ -12,7 +12,8 @@
 | Fotos de las cartas | Sí, en Google Drive |
 
 ## Pendientes para el dueño del proyecto
-Ninguna por ahora.
+1. ¿Aceptas usar la **mediana** de ventas (lo que entrega TCGmatch) en vez del promedio?
+2. ¿Envías el correo a TCGmatch (borrador en `investigacion/contacto-tcgmatch.md`)? Recomendado antes de comercializar.
 
 ## Técnicas (a verificar)
 - Estado actual y límites gratuitos de pokemontcg.io, pokemontcgapi.com y TCGdex.

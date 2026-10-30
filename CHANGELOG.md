@@ -2,6 +2,7 @@
 
 ## [Sin publicar]
 ### Añadido
+- Fase 1: informe de investigación de fuentes y propuesta para integrar TCGmatch.
 - Fuentes chilenas (TCGmatch y otras tiendas) con revisión inicial de robots.txt.
 - Licencia: todos los derechos reservados.
 - Condición por carta (RF-13) y fotos en Google Drive (RF-14).

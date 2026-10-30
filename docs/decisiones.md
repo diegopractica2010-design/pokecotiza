@@ -13,3 +13,6 @@
 | 9 | 2026-10-30 | Repo público con todos los derechos reservados | El dueño quiere poder comercializarlo; sin licencia abierta nadie obtiene permisos de uso | Licencias abiertas (MIT, GPL) |
 | 10 | 2026-10-30 | Registrar la condición de cada carta, NM por defecto | Cambia mucho el precio; TCGmatch vende por condición | Ignorar la condición |
 | 11 | 2026-10-30 | Fotos en Google Drive con permiso `drive.file` | Gratis, junto a la planilla; acceso solo a archivos de la app | Guardar fotos solo en el dispositivo |
+| 12 | 2026-10-30 | TCGmatch se vincula carta por carta y se lee solo `/producto/catalogo/{id}` | Su búsqueda depende de `/api/` (excluida por robots.txt); 60 cartas se vinculan en minutos | Usar su API interna; recorrer los sitemaps (~790 mil publicaciones) |
+| 13 | 2026-10-30 | TCGdex como catálogo principal (EN/ES/JA) y fuente de Cardmarket/TCGplayer | Funciona sin clave, tiene japonés y español, y precios recientes | pokemontcg.io (solo inglés; Cardmarket desactualizado en la prueba) |
+| 14 | 2026-10-30 | Tipo de cambio desde mindicador.cl | API pública chilena, probada | — |
