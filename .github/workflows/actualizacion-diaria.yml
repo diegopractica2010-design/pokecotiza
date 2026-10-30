@@ -17,12 +17,14 @@ jobs:
     defaults:
       run:
         working-directory: tools/actualizador
-    env:
-      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-      POKECOTIZA_ID_PLANILLA: ${{ vars.POKECOTIZA_ID_PLANILLA }}
     steps:
+      # La clave de la cuenta de servicio solo la ven este paso (para saber si
+      # existe) y el que cotiza; no las acciones de terceros.
       - name: ¿Está configurada?
         id: config
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          POKECOTIZA_ID_PLANILLA: ${{ vars.POKECOTIZA_ID_PLANILLA }}
         run: |
           if [ -z "$GOOGLE_SERVICE_ACCOUNT_JSON" ] || [ -z "$POKECOTIZA_ID_PLANILLA" ]; then
             echo "::notice::Tarea diaria sin configurar (faltan GOOGLE_SERVICE_ACCOUNT_JSON o POKECOTIZA_ID_PLANILLA). Ver docs/tarea-diaria.md."
@@ -41,4 +43,7 @@ jobs:
         if: steps.config.outputs.lista == 'si'
       - name: Cotizar la colección
         if: steps.config.outputs.lista == 'si'
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          POKECOTIZA_ID_PLANILLA: ${{ vars.POKECOTIZA_ID_PLANILLA }}
         run: dart run bin/actualizar.dart
