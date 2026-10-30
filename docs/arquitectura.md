@@ -70,6 +70,12 @@ Cada consulta pasa por:
 - límite de frecuencia por dominio
 - registro de errores
 
+### 2b. Cálculo del valor
+Por carta se guardan dos valores en CLP:
+- **Promedio publicado:** promedio de las ofertas vigentes en los mercados activos, descartando extremos (método por definir, p. ej. quitar el 10 % más alto y más bajo).
+- **Promedio de ventas reales:** promedio de ventas cerradas en una ventana de tiempo (p. ej. 30 días), solo de fuentes que entreguen ventas.
+Ambos se filtran por idioma, condición y gradeo de la carta. El valor de la colección es la suma de cada uno.
+
 ### 3. Conversión de moneda
 USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. Fuente por verificar (candidato: mindicador.cl).
 
@@ -93,7 +99,7 @@ Planilla única con pestañas:
 4. Agrega filas a `Precios` y actualiza `Resumen`.
 5. Si una fuente falla, lo registra y sigue con las demás.
 
-> Por verificar: límites del plan gratuito de Actions según si el repo es público o privado, y si los sitios bloquean las IPs de GitHub.
+> Volumen: ~60 cartas × pocas fuentes = unos cientos de consultas al día, con pausas entre ellas. El repo es público. Por verificar: límites vigentes de GitHub Actions para repos públicos y si los sitios bloquean las IPs de GitHub.
 
 ### 6. Interfaz (pantallas)
 1. **Colección:** lista con valor por carta y total; filtros por set, idioma y gradeo.

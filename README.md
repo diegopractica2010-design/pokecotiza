@@ -26,3 +26,6 @@ App para **Android y Windows** que valoriza una colección de cartas Pokémon TC
 
 ## Stack previsto
 Flutter (Dart) para la app, un paquete Dart compartido con la lógica de cotización, Google Sheets como base de datos y GitHub Actions para la actualización diaria. Detalle en la arquitectura.
+
+## Licencia
+Todos los derechos reservados. El código es visible pero no se concede permiso para usarlo, copiarlo ni distribuirlo. Ver [LICENSE](LICENSE).
