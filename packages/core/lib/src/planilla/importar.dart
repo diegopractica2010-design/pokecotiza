@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../errores.dart';
 import '../modelos.dart';
 import '../valorizacion.dart';
@@ -45,11 +47,28 @@ String _acabado(String v) => switch (_normalizar(v)) {
       _ => v,
     };
 
+/// Id estable para una fila importada sin `id`: se calcula con los datos que
+/// identifican la carta (FNV-1a de 64 bits). Así, reimportar el mismo archivo
+/// reemplaza en vez de duplicar, aunque una importación anterior quedara a medias.
+String idDeImportacion(List<Object?> fila) {
+  final clave = [
+    for (final c in ['nombre', 'idioma', 'codigo_set', 'numero', 'acabado', 'condicion', 'gradeadora', 'nota_gradeo'])
+      _normalizar(fila[Esquema.columnasColeccion.indexOf(c)]),
+  ].join('|');
+  var h = BigInt.parse('cbf29ce484222325', radix: 16);
+  final primo = BigInt.parse('100000001b3', radix: 16);
+  final mascara = (BigInt.one << 64) - BigInt.one;
+  for (final b in utf8.encode(clave)) {
+    h = ((h ^ BigInt.from(b)) * primo) & mascara;
+  }
+  return 'imp-${h.toRadixString(36)}';
+}
+
 /// Convierte las filas de una planilla (Excel u otra) en cartas. La primera
 /// fila debe tener los encabezados; se reconocen por nombre, en cualquier
-/// orden. Si una fila no trae `id`, se le asigna uno con [nuevoId].
-({List<CartaColeccion> cartas, List<FilaInvalida> invalidas}) importarFilas(List<List<Object?>> filas,
-    {required String Function() nuevoId}) {
+/// orden. Si una fila no trae `id`, se calcula con [idDeImportacion]. Si dos
+/// filas terminan con el mismo id, la segunda se informa como repetida.
+({List<CartaColeccion> cartas, List<FilaInvalida> invalidas}) importarFilas(List<List<Object?>> filas) {
   if (filas.isEmpty) {
     return (cartas: const [], invalidas: const [FilaInvalida(1, 'el archivo está vacío')]);
   }
@@ -68,6 +87,7 @@ String _acabado(String v) => switch (_normalizar(v)) {
 
   final cartas = <CartaColeccion>[];
   final invalidas = <FilaInvalida>[];
+  final vistos = <String, int>{};
   for (var i = 1; i < filas.length; i++) {
     final f = filas[i];
     Object? celda(String columna) {
@@ -80,14 +100,23 @@ String _acabado(String v) => switch (_normalizar(v)) {
     final fila = <Object?>[
       for (final columna in Esquema.columnasColeccion)
         switch (columna) {
-          'id' => '${celda('id') ?? ''}'.trim().isEmpty ? nuevoId() : celda('id'),
+          'id' => celda('id'),
           'idioma' => _idioma('${celda('idioma') ?? ''}'),
           'acabado' => _acabado('${celda('acabado') ?? ''}'),
           _ => celda(columna),
         },
     ];
+    if ('${fila[0] ?? ''}'.trim().isEmpty) fila[0] = idDeImportacion(fila);
     try {
-      cartas.add(filaACarta(fila));
+      final carta = filaACarta(fila);
+      final previa = vistos[carta.id];
+      if (previa != null) {
+        invalidas.add(
+            FilaInvalida(i + 1, 'repite la carta de la fila $previa (para varias copias usa la columna Cantidad)'));
+        continue;
+      }
+      vistos[carta.id] = i + 1;
+      cartas.add(carta);
     } on FormatoInesperado catch (e) {
       invalidas.add(FilaInvalida(i + 1, e.mensaje));
     }

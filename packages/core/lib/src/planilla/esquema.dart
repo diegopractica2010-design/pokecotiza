@@ -114,6 +114,12 @@ CartaColeccion filaACarta(List<Object?> fila) {
       ? Acabado.normal
       : (Acabado.values.where((a) => a.name.toLowerCase() == texto(7).toLowerCase().replaceAll(' ', '')).firstOrNull ??
           (throw FormatoInesperado('planilla', 'acabado "${texto(7)}" no válido (normal, holo, reverseHolo)')));
+  final cantidad = entero(10) ?? 1;
+  if (cantidad < 1) throw FormatoInesperado('planilla', 'la cantidad debe ser 1 o más (es $cantidad)');
+  final valorManual = entero(13);
+  if (valorManual != null && valorManual < 0) {
+    throw FormatoInesperado('planilla', 'el valor manual no puede ser negativo ($valorManual)');
+  }
   final gradeadora = opcional(8);
   return CartaColeccion(
     id: id,
@@ -125,10 +131,10 @@ CartaColeccion filaACarta(List<Object?> fila) {
     condicion: condicion,
     acabado: acabado,
     gradeo: gradeadora == null ? null : Gradeo(empresa: gradeadora, nota: texto(9)),
-    cantidad: entero(10) ?? 1,
+    cantidad: cantidad,
     tcgdexId: opcional(11),
     tcgmatchId: entero(12),
-    valorManualClp: entero(13),
+    valorManualClp: valorManual,
     fotoUrl: opcional(14),
     fechaAlta: DateTime.tryParse(texto(15)),
   );

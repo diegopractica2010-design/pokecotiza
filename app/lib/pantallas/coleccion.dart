@@ -48,6 +48,8 @@ class PantallaColeccion extends StatelessWidget {
                 ),
               PopupMenuButton<String>(
                 tooltip: 'Más opciones',
+                // Importar mientras carga o actualiza podría perder lo importado.
+                enabled: !estado.cargando && progreso == null,
                 onSelected: (o) => o == 'importar' ? _importar(context) : _exportar(context),
                 itemBuilder: (_) => const [
                   PopupMenuItem(value: 'importar', child: Text('Importar desde Excel')),
@@ -117,14 +119,19 @@ extension _Excel on PantallaColeccion {
           dialogTitle: 'Elige el Excel con tus cartas', type: FileType.custom, allowedExtensions: ['xlsx']);
       if (archivos.isEmpty) return;
       final filas = leerXlsx(await archivos.first.xFile.readAsBytes());
-      final r = importarFilas(filas, nuevoId: EstadoApp.nuevoId);
-      final n = await estado.importar(r.cartas);
+      final r = importarFilas(filas);
+      final resultado = await estado.importar(r.cartas);
       if (!context.mounted) return;
-      final errores = r.invalidas.take(3).map((f) => f.toString()).join('\n');
+      final problemas = [
+        ...r.invalidas.map((f) => f.toString()),
+        ...resultado.fallidas.entries.map((e) => '${e.key}: no se pudo guardar (${e.value})'),
+      ];
       _avisar(
           context,
-          'Se importaron $n cartas.${r.invalidas.isEmpty ? '' : ' ${r.invalidas.length} filas con error:\n$errores'}'
-          '${n > 0 ? '\nToca "Actualizar precios" para cotizarlas.' : ''}');
+          'Se importaron ${resultado.guardadas} cartas.'
+          '${problemas.isEmpty ? '' : ' ${problemas.length} con problemas:\n${problemas.take(3).join('\n')}'}'
+          '${resultado.fallidas.isEmpty ? '' : '\nPuedes reintentar con el mismo archivo: no se duplican.'}'
+          '${resultado.guardadas > 0 ? '\nToca "Actualizar precios" para cotizarlas.' : ''}');
     } on Object catch (e) {
       if (context.mounted) _avisar(context, 'No se pudo importar: $e');
     }

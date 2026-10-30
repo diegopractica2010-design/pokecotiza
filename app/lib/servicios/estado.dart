@@ -123,22 +123,49 @@ class EstadoApp extends ChangeNotifier {
   }
 
   /// Agrega o reemplaza (por id) las cartas importadas. No las cotiza: eso se
-  /// hace con "Actualizar precios". Devuelve cuántas guardó.
-  Future<int> importar(List<CartaColeccion> nuevas) async {
-    var n = 0;
+  /// hace con "Actualizar precios". Si una carta falla al guardarse, sigue con
+  /// las demás y la informa; como los ids importados son estables, reintentar
+  /// el mismo archivo no duplica las ya guardadas.
+  Future<({int guardadas, Map<String, String> fallidas})> importar(List<CartaColeccion> nuevas) async {
+    if (cargando) throw StateError('Espera a que termine de cargar la colección.');
+    var guardadas = 0;
+    final fallidas = <String, String>{};
     for (final c in nuevas) {
-      await almacen.guardarCarta(c);
+      try {
+        await almacen.guardarCarta(c);
+      } on Object catch (e) {
+        fallidas[c.nombre] = '$e';
+        continue;
+      }
+      guardadas++;
       final i = cartas.indexWhere((x) => x.id == c.id);
       if (i >= 0) {
+        if (!mismaCarta(cartas[i], c)) {
+          // Ahora es otra carta: su precio guardado ya no corresponde.
+          cotizaciones.remove(c.id);
+          await almacen.eliminarCotizacion(c.id);
+        }
         cartas[i] = c;
       } else {
         cartas.add(c);
       }
-      n++;
     }
     notifyListeners();
-    return n;
+    return (guardadas: guardadas, fallidas: fallidas);
   }
+
+  /// True si dos versiones de una carta tienen el mismo precio de mercado
+  /// (cambiar solo la cantidad o la foto no cambia su precio).
+  static bool mismaCarta(CartaColeccion a, CartaColeccion b) =>
+      a.nombre == b.nombre &&
+      a.idioma == b.idioma &&
+      a.numero == b.numero &&
+      a.acabado == b.acabado &&
+      a.condicion == b.condicion &&
+      a.tcgdexId == b.tcgdexId &&
+      a.tcgmatchId == b.tcgmatchId &&
+      a.gradeo?.toString() == b.gradeo?.toString() &&
+      a.valorManualClp == b.valorManualClp;
 
   /// Cambia dónde se guarda la colección y la vuelve a leer.
   Future<void> cambiarAlmacen(Almacen nuevo) async {
