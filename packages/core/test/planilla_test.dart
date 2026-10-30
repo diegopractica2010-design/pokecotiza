@@ -1,7 +1,7 @@
 import 'package:pokecotiza_core/pokecotiza_core.dart';
 import 'package:test/test.dart';
 
-import 'sheets_falso.dart';
+import 'package:pokecotiza_core/testing.dart';
 
 void main() {
   late SheetsFalso falso;
@@ -193,5 +193,13 @@ void main() {
       () => PlanillaColeccion(sheets, 'otra').leerColeccion(),
       throwsA(isA<FuenteNoDisponible>().having((e) => e.codigoHttp, 'codigo', 404)),
     );
+  });
+
+  test('id de planilla desde un enlace', () {
+    expect(idPlanillaDesdeEnlace('https://docs.google.com/spreadsheets/d/1AbCdEfGhIjKlMnOpQrStUvWxYz_-123/edit#gid=0'),
+        '1AbCdEfGhIjKlMnOpQrStUvWxYz_-123');
+    expect(idPlanillaDesdeEnlace(' 1AbCdEfGhIjKlMnOpQrStUvWxYz_-123 '), '1AbCdEfGhIjKlMnOpQrStUvWxYz_-123');
+    expect(idPlanillaDesdeEnlace('https://tcgmatch.cl/producto/catalogo/1'), isNull);
+    expect(enlacePlanilla('abc').toString(), 'https://docs.google.com/spreadsheets/d/abc/edit');
   });
 }

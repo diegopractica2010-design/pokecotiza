@@ -10,7 +10,8 @@ import 'almacen.dart';
 class EstadoApp extends ChangeNotifier {
   EstadoApp({required this.almacen, required this.cotizador, required this.tcgdex, required this.tcgmatch});
 
-  final Almacen almacen;
+  /// Dónde está la colección (dispositivo o Google Sheets). Cambia desde Ajustes.
+  Almacen almacen;
   final Cotizador cotizador;
   final TcgdexCliente tcgdex;
   final TcgmatchCliente tcgmatch;
@@ -39,6 +40,8 @@ class EstadoApp extends ChangeNotifier {
       invalidas = r.invalidas;
       cotizaciones = await almacen.leerCotizaciones();
       tipoCambio = await almacen.leerTipoCambio();
+      final a = almacen;
+      if (a is AlmacenPlanilla && a.aviso != null) error = a.aviso;
     } on Object catch (e) {
       error = 'No se pudo leer la colección: $e';
     } finally {
@@ -117,6 +120,12 @@ class EstadoApp extends ChangeNotifier {
       progreso = null;
       notifyListeners();
     }
+  }
+
+  /// Cambia dónde se guarda la colección y la vuelve a leer.
+  Future<void> cambiarAlmacen(Almacen nuevo) async {
+    almacen = nuevo;
+    await cargar();
   }
 
   Future<void> eliminar(String id) async {

@@ -6,6 +6,19 @@ import '../errores.dart';
 
 const _fuente = 'Google Sheets';
 
+/// Saca el id de la planilla de un enlace como
+/// `https://docs.google.com/spreadsheets/d/ID/edit`. También acepta el id solo.
+/// Devuelve null si no lo reconoce.
+String? idPlanillaDesdeEnlace(String texto) {
+  final t = texto.trim();
+  final m = RegExp(r'/spreadsheets/d/([A-Za-z0-9_-]{20,})').firstMatch(t);
+  if (m != null) return m.group(1);
+  return RegExp(r'^[A-Za-z0-9_-]{20,}$').hasMatch(t) ? t : null;
+}
+
+/// Enlace para abrir la planilla en el navegador.
+Uri enlacePlanilla(String idPlanilla) => Uri.parse('https://docs.google.com/spreadsheets/d/$idPlanilla/edit');
+
 /// Entrega un token de acceso OAuth vigente. En la app lo da el inicio de
 /// sesión con Google; en la tarea diaria, una cuenta de servicio.
 typedef ProveedorToken = Future<String> Function();

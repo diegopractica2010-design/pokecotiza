@@ -179,6 +179,13 @@ class AlmacenLocal implements Almacen {
         await _escribir(datos);
       });
 
+  /// Reemplaza todas las cartas (copia local de la planilla).
+  Future<void> reemplazarCartas(List<CartaColeccion> cartas) => _enCola(() async {
+        final datos = await _leer();
+        datos['cartas'] = [for (final c in cartas) cartaAFila(c)];
+        await _escribir(datos);
+      });
+
   @override
   Future<TipoCambio?> leerTipoCambio() async {
     final t = (await _leer())['tipoCambio'];
@@ -191,4 +198,92 @@ class AlmacenLocal implements Almacen {
         datos['tipoCambio'] = t.aJson();
         await _escribir(datos);
       });
+}
+
+/// Colección en Google Sheets. Las últimas cotizaciones se guardan además en
+/// el dispositivo ([cache]) para abrir la app sin consultar la planilla de
+/// precios; cada cotización nueva se agrega al historial de la planilla.
+class AlmacenPlanilla implements Almacen {
+  AlmacenPlanilla(this.planilla, this.cache);
+
+  final PlanillaColeccion planilla;
+  final AlmacenLocal cache;
+  TipoCambio? _cambio;
+
+  /// Si la última lectura no pudo usar la planilla, explica por qué (se
+  /// mostró la copia del dispositivo). Null si se leyó bien.
+  String? aviso;
+
+  @override
+  String get descripcion => aviso == null ? 'Google Sheets' : 'copia del dispositivo (Google Sheets no disponible)';
+
+  /// Lee la planilla y actualiza la copia del dispositivo. Si Google no
+  /// responde (sin internet, sesión vencida), devuelve esa copia.
+  @override
+  Future<({List<CartaColeccion> cartas, List<FilaInvalida> invalidas})> leerCartas() async {
+    try {
+      final r = await planilla.leerColeccion();
+      await cache.reemplazarCartas(r.cartas);
+      aviso = null;
+      return r;
+    } on Exception catch (e) {
+      aviso = 'No se pudo leer tu planilla de Google ($e). Se muestra la copia del dispositivo.';
+      return cache.leerCartas();
+    }
+  }
+
+  @override
+  Future<void> guardarCarta(CartaColeccion carta) async {
+    await planilla.guardarCarta(carta);
+    await cache.guardarCarta(carta);
+  }
+
+  @override
+  Future<void> eliminarCarta(String id) async {
+    await planilla.eliminarCarta(id);
+    await cache.eliminarCarta(id); // borra su cotización guardada en el dispositivo
+  }
+
+  @override
+  Future<Map<String, CotizacionGuardada>> leerCotizaciones() => cache.leerCotizaciones();
+
+  @override
+  Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async {
+    await cache.guardarCotizacion(idCarta, c);
+    final cambio = _cambio ?? await leerTipoCambio();
+    if (cambio != null && c.cotizaciones.isNotEmpty) {
+      await planilla.registrarPrecios(idCarta, c.cotizaciones, cambio, fecha: c.fecha);
+    }
+  }
+
+  @override
+  Future<TipoCambio?> leerTipoCambio() async {
+    if (_cambio != null) return _cambio;
+    try {
+      _cambio = await planilla.leerTipoCambio();
+    } on Exception {
+      _cambio = null; // sin planilla: se usa la copia del dispositivo
+    }
+    return _cambio ??= await cache.leerTipoCambio();
+  }
+
+  @override
+  Future<void> guardarTipoCambio(TipoCambio t) async {
+    _cambio = t;
+    await planilla.guardarTipoCambio(t);
+    await cache.guardarTipoCambio(t);
+  }
+}
+
+/// Sube a la planilla las cartas del dispositivo que aún no estén en ella.
+/// Devuelve cuántas subió.
+Future<int> migrarALaPlanilla(Almacen origen, PlanillaColeccion destino) async {
+  final enPlanilla = (await destino.leerColeccion()).cartas.map((c) => c.id).toSet();
+  var subidas = 0;
+  for (final c in (await origen.leerCartas()).cartas) {
+    if (enPlanilla.contains(c.id)) continue;
+    await destino.guardarCarta(c);
+    subidas++;
+  }
+  return subidas;
 }

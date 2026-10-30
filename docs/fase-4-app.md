@@ -35,8 +35,29 @@ Iniciada el 2026-10-30. Código en `app/` (Flutter 3.47.9, Dart 3.13.7).
 - La APK queda firmada con la clave de desarrollo: se instala en el teléfono, pero no sirve para Google Play (no está en el plan).
 - En Android, el navegador dentro de la app para TCGmatch queda para después; por ahora se abre el navegador del teléfono y se pega el enlace.
 
-## Parte B: Google Sheets real (pendiente, necesita al dueño)
-- **Android:** inicio de sesión con `google_sign_in`.
-- **Windows:** `google_sign_in` no es compatible con Windows (según pub.dev, solo Android, iOS, macOS y web). Se usará `googleapis_auth`, que abre el navegador para iniciar sesión.
-- **Lo que tendrá que hacer el dueño:** crear un proyecto en Google Cloud, activar las APIs de Sheets y Drive, y crear credenciales OAuth para Android y escritorio. Los pasos se verifican contra la consola de Google al momento de hacerlo.
-- Luego: la opción "Guardar en Google Sheets" en la app y la prueba contra la planilla real.
+## Parte B: Google Sheets (código hecho; falta configurar credenciales)
+- **Ajustes (⚙):**
+  - "Conectar con Google y crear planilla": inicia sesión, crea la planilla, sube las cartas del dispositivo y cambia la app a Google Sheets.
+  - "Conectar con esa planilla": para el segundo dispositivo, pegando el enlace de la planilla.
+  - "Abrir planilla" y "Desconectar".
+- **Inicio de sesión:**
+  - Android: `google_sign_in` 7 con una credencial "web" (`serverClientId`); Google reconoce la app por el paquete y la huella SHA-1 de la clave de firma.
+  - Windows: `googleapis_auth` abre el navegador; la sesión se guarda cifrada con `flutter_secure_storage` y se renueva sola.
+- **Datos:** la colección, el historial de precios y el tipo de cambio van a la planilla. La última cotización de cada carta se guarda además en el dispositivo para abrir la app rápido.
+- **Al abrir la app:** si la planilla no está disponible (sesión vencida), muestra la copia del dispositivo con un aviso.
+- **Credenciales:** entran al compilar (`--dart-define`) desde las variables y secretos del repositorio. Sin ellas, la app funciona solo con el dispositivo.
+- **Pruebas:** 7 nuevas (13 en total), con Google Sheets simulado y una sesión falsa: crear y conectar, subir cartas, segundo dispositivo, historial. Se rompió la subida de cartas a propósito y las pruebas lo detectaron.
+
+### Revisión de Codex (PR #7)
+| Hallazgo | Corrección |
+|---|---|
+| Si Google fallaba con la sesión aparentemente vigente, la colección quedaba vacía | La planilla se copia en el dispositivo; si Google falla, se muestra esa copia con un aviso |
+| Android: rechazar el permiso de Sheets dejaba la app "conectada" sin poder usarla | "Conectada" exige también el permiso; si falta, se vuelve a pedir |
+
+### Lo que falta (necesita al dueño)
+1. Crear las credenciales en Google Cloud: [google-cloud.md](google-cloud.md).
+2. Para Android, además, la clave de firma fija: [firma-android.md](firma-android.md).
+
+### Sin verificar
+- No se ha probado contra Google real (faltan las credenciales).
+- Que la sesión venza cada 7 días mientras la app esté en "modo de prueba" (información de foros, no oficial).

@@ -2,6 +2,7 @@
 
 ## [Sin publicar]
 ### Añadido
+- Fase 4 (parte B): Ajustes para guardar la colección en Google Sheets (crear planilla, conectar otro dispositivo, subir cartas del dispositivo), inicio de sesión en Android y Windows; guía de credenciales.
 - Fase 4 (parte A): app Flutter para Android y Windows con pantallas de colección, agregar, confirmar y detalle; almacenamiento en el dispositivo; compilación automática de APK y Windows.
 - Núcleo: `Cotizador` (junta TCGdex y TCGmatch por carta).
 - Fase 3: módulo de planilla (Google Sheets) en el núcleo: colección, historial de precios, resumen y tipo de cambio, con 12 pruebas (incluye correcciones de la revisión de Codex).
