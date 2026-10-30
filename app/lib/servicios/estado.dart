@@ -40,6 +40,8 @@ class EstadoApp extends ChangeNotifier {
       invalidas = r.invalidas;
       cotizaciones = await almacen.leerCotizaciones();
       tipoCambio = await almacen.leerTipoCambio();
+      final a = almacen;
+      if (a is AlmacenPlanilla && a.aviso != null) error = a.aviso;
     } on Object catch (e) {
       error = 'No se pudo leer la colección: $e';
     } finally {

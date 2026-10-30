@@ -64,8 +64,14 @@ class SesionGoogleAndroid implements SesionGoogle {
     return _cuenta ??= await (GoogleSignIn.instance.attemptLightweightAuthentication() ?? Future.value(null));
   }
 
+  /// Conectada = hay cuenta Y el permiso de Sheets está autorizado. Si el
+  /// usuario rechazó el permiso, se considera desconectada para volver a pedirlo.
   @override
-  Future<bool> conectada() async => (await _silenciosa()) != null;
+  Future<bool> conectada() async {
+    final cuenta = await _silenciosa();
+    if (cuenta == null) return false;
+    return (await cuenta.authorizationClient.authorizationForScopes(permisosGoogle)) != null;
+  }
 
   @override
   Future<void> iniciar() async {

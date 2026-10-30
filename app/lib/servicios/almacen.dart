@@ -179,6 +179,13 @@ class AlmacenLocal implements Almacen {
         await _escribir(datos);
       });
 
+  /// Reemplaza todas las cartas (copia local de la planilla).
+  Future<void> reemplazarCartas(List<CartaColeccion> cartas) => _enCola(() async {
+        final datos = await _leer();
+        datos['cartas'] = [for (final c in cartas) cartaAFila(c)];
+        await _escribir(datos);
+      });
+
   @override
   Future<TipoCambio?> leerTipoCambio() async {
     final t = (await _leer())['tipoCambio'];
@@ -203,14 +210,33 @@ class AlmacenPlanilla implements Almacen {
   final AlmacenLocal cache;
   TipoCambio? _cambio;
 
-  @override
-  String get descripcion => 'Google Sheets';
+  /// Si la última lectura no pudo usar la planilla, explica por qué (se
+  /// mostró la copia del dispositivo). Null si se leyó bien.
+  String? aviso;
 
   @override
-  Future<({List<CartaColeccion> cartas, List<FilaInvalida> invalidas})> leerCartas() => planilla.leerColeccion();
+  String get descripcion => aviso == null ? 'Google Sheets' : 'copia del dispositivo (Google Sheets no disponible)';
+
+  /// Lee la planilla y actualiza la copia del dispositivo. Si Google no
+  /// responde (sin internet, sesión vencida), devuelve esa copia.
+  @override
+  Future<({List<CartaColeccion> cartas, List<FilaInvalida> invalidas})> leerCartas() async {
+    try {
+      final r = await planilla.leerColeccion();
+      await cache.reemplazarCartas(r.cartas);
+      aviso = null;
+      return r;
+    } on Exception catch (e) {
+      aviso = 'No se pudo leer tu planilla de Google ($e). Se muestra la copia del dispositivo.';
+      return cache.leerCartas();
+    }
+  }
 
   @override
-  Future<void> guardarCarta(CartaColeccion carta) => planilla.guardarCarta(carta);
+  Future<void> guardarCarta(CartaColeccion carta) async {
+    await planilla.guardarCarta(carta);
+    await cache.guardarCarta(carta);
+  }
 
   @override
   Future<void> eliminarCarta(String id) async {
@@ -231,8 +257,15 @@ class AlmacenPlanilla implements Almacen {
   }
 
   @override
-  Future<TipoCambio?> leerTipoCambio() async =>
-      _cambio ??= await planilla.leerTipoCambio() ?? await cache.leerTipoCambio();
+  Future<TipoCambio?> leerTipoCambio() async {
+    if (_cambio != null) return _cambio;
+    try {
+      _cambio = await planilla.leerTipoCambio();
+    } on Exception {
+      _cambio = null; // sin planilla: se usa la copia del dispositivo
+    }
+    return _cambio ??= await cache.leerTipoCambio();
+  }
 
   @override
   Future<void> guardarTipoCambio(TipoCambio t) async {

@@ -145,4 +145,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Guardada: memoria'), findsOneWidget);
   });
+
+  test('si Google falla, se muestra la copia del dispositivo con un aviso', () async {
+    final falso = SheetsFalso();
+    var token = 'token-prueba';
+    final sheets = SheetsCliente(() async => token, cliente: falso.cliente);
+    final planilla = await PlanillaColeccion.crear(sheets);
+    final cache = AlmacenLocal(File('${dir.path}/c.json'));
+    final a = AlmacenPlanilla(planilla, cache);
+    await a.guardarCarta(const CartaColeccion(id: 'c1', nombre: 'Lucario', idioma: Idioma.espanol));
+    expect((await a.leerCartas()).cartas.single.id, 'c1');
+    expect(a.aviso, isNull);
+
+    token = 'vencido'; // el simulador responde 401
+    final estado = estadoDePrueba(AlmacenMemoria())..almacen = a;
+    await estado.cargar();
+    expect(estado.cartas.single.nombre, 'Lucario');
+    expect(estado.error, contains('copia del dispositivo'));
+    expect(a.descripcion, contains('copia del dispositivo'));
+  });
 }

@@ -46,7 +46,13 @@ Iniciada el 2026-10-30. Código en `app/` (Flutter 3.47.9, Dart 3.13.7).
 - **Datos:** la colección, el historial de precios y el tipo de cambio van a la planilla. La última cotización de cada carta se guarda además en el dispositivo para abrir la app rápido.
 - **Al abrir la app:** si la planilla no está disponible (sesión vencida), muestra la copia del dispositivo con un aviso.
 - **Credenciales:** entran al compilar (`--dart-define`) desde las variables y secretos del repositorio. Sin ellas, la app funciona solo con el dispositivo.
-- **Pruebas:** 6 nuevas (12 en total), con Google Sheets simulado y una sesión falsa: crear y conectar, subir cartas, segundo dispositivo, historial. Se rompió la subida de cartas a propósito y las pruebas lo detectaron.
+- **Pruebas:** 7 nuevas (13 en total), con Google Sheets simulado y una sesión falsa: crear y conectar, subir cartas, segundo dispositivo, historial. Se rompió la subida de cartas a propósito y las pruebas lo detectaron.
+
+### Revisión de Codex (PR #7)
+| Hallazgo | Corrección |
+|---|---|
+| Si Google fallaba con la sesión aparentemente vigente, la colección quedaba vacía | La planilla se copia en el dispositivo; si Google falla, se muestra esa copia con un aviso |
+| Android: rechazar el permiso de Sheets dejaba la app "conectada" sin poder usarla | "Conectada" exige también el permiso; si falta, se vuelve a pedir |
 
 ### Lo que falta (necesita al dueño)
 1. Crear las credenciales en Google Cloud: [google-cloud.md](google-cloud.md).
