@@ -86,7 +86,7 @@ USD/EUR/JPY → CLP con un tipo de cambio diario, guardando la fecha del dato. F
 Planilla única con pestañas:
 | Pestaña | Una fila por | Columnas principales |
 |---|---|---|
-| `Coleccion` | carta física | id, tcgmatch_id, tcgdex_id, nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
+| `Coleccion` | carta física | id, tcgmatch_id, tcgdex_id, acabado (normal/holo/reverse holo), nombre, set, número, regulación, idioma, condición (NM/LP/MP/HP/DMG), gradeadora, nota, cantidad, foto (enlace a Drive), fecha_alta |
 | `Precios` | cotización (historial, solo se agregan filas) | id_carta, fecha, mercado, precio, moneda, precio_clp, tipo (venta/oferta), url |
 | `Resumen` | día | fecha, valor_total_clp (fórmulas) |
 | `Config` | parámetro | mercados activos, tipo de cambio, etc. |

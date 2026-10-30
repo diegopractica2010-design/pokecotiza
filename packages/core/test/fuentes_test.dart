@@ -1,0 +1,141 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:pokecotiza_core/pokecotiza_core.dart';
+import 'package:test/test.dart';
+
+String fixture(String nombre) => File('test/fixtures/$nombre').readAsStringSync();
+
+ClienteCortes clienteFalso(Map<String, String> respuestas, {List<Uri>? pedidas}) => ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        pedidas?.add(req.url);
+        final cuerpo = respuestas[req.url.path];
+        if (cuerpo == null) return http.Response('no encontrado', 404);
+        return http.Response.bytes(utf8.encode(cuerpo), 200, headers: {'content-type': 'text/html; charset=utf-8'});
+      }),
+    );
+
+void main() {
+  group('TCGmatch', () {
+    test('lee precios por idioma y mediana de ventas de la página de catálogo', () {
+      final p = leerCatalogoTcgmatch(fixture('tcgmatch_catalogo.html'));
+      expect(p.idCatalogo, 43946);
+      expect(p.nombre, 'Exeggcute');
+      expect(p.codigo, '1/131');
+      expect(p.general.mercado, 200);
+      expect(p.general.ventasCantidad, 8);
+      expect(p.general.ventasMediana, 200);
+      expect(p.porIdioma[Idioma.espanol]!.mercado, 150);
+      expect(p.porIdioma[Idioma.espanol]!.ventasCantidad, isNull);
+      expect(p.porIdioma[Idioma.ingles]!.ventasMediana, 400);
+      expect(p.porIdioma.containsKey(Idioma.japones), isFalse);
+    });
+
+    test('cotizaciones no mezclan idiomas', () {
+      final p = leerCatalogoTcgmatch(fixture('tcgmatch_catalogo.html'));
+      final en = cotizacionesDesdeTcgmatch(p, Idioma.ingles);
+      expect(en.map((c) => (c.tipo, c.valor)), [(TipoPrecio.publicado, 350.0), (TipoPrecio.ventas, 400.0)]);
+      expect(en.first.url.toString(), 'https://tcgmatch.cl/producto/catalogo/43946');
+      final es = cotizacionesDesdeTcgmatch(p, Idioma.espanol);
+      expect(es.map((c) => c.tipo), [TipoPrecio.publicado]);
+      expect(cotizacionesDesdeTcgmatch(p, Idioma.japones), isEmpty);
+    });
+
+    test('analiza enlaces de carta y de publicación', () {
+      expect((analizarEnlaceTcgmatch('https://tcgmatch.cl/producto/catalogo/43946') as EnlaceCatalogo).id, 43946);
+      expect(
+          (analizarEnlaceTcgmatch(' https://tcgmatch.cl/producto/64e1875e1506843f0f4a3604 ') as EnlacePublicacion).id,
+          '64e1875e1506843f0f4a3604');
+      expect(analizarEnlaceTcgmatch('https://tcgmatch.cl/cartas/pokemon'), isNull);
+      expect(analizarEnlaceTcgmatch('https://otro.cl/producto/catalogo/1'), isNull);
+    });
+
+    test('resuelve una publicación a su carta sin tocar /api/', () async {
+      final pedidas = <Uri>[];
+      final cliente = TcgmatchCliente(clienteFalso({
+        '/producto/64e1875e1506843f0f4a3604': fixture('tcgmatch_producto.html'),
+      }, pedidas: pedidas));
+      expect(await cliente.resolverEnlace('https://tcgmatch.cl/producto/64e1875e1506843f0f4a3604'), 44078);
+      expect(pedidas.any((u) => u.path.startsWith('/api/')), isFalse);
+    });
+
+    test('una página sin __NEXT_DATA__ da FormatoInesperado', () {
+      expect(() => leerCatalogoTcgmatch('<html></html>'), throwsA(isA<FormatoInesperado>()));
+    });
+  });
+
+  group('TCGdex', () {
+    test('holo: Cardmarket usa campos normales y TCGplayer la variante holofoil', () {
+      final c = leerCartaTcgdex(fixture('tcgdex_carta_es.json'), acabado: Acabado.holo);
+      expect(c.id, 'sm6-122');
+      expect(c.nombre, 'Lucario GX');
+      expect(c.nombreSet, 'Luz Prohibida');
+      final porDetalle = {for (final q in c.cotizaciones) q.detalle: q};
+      expect(porDetalle['cardmarket trend vía TCGdex']!.valor, 33.81);
+      expect(porDetalle['cardmarket avg30 vía TCGdex']!.tipo, TipoPrecio.ventas);
+      expect(porDetalle['cardmarket avg30 vía TCGdex']!.valor, 41.05);
+      expect(porDetalle['tcgplayer holofoil marketPrice vía TCGdex']!.valor, 35.02);
+      expect(porDetalle['tcgplayer holofoil marketPrice vía TCGdex']!.moneda, Moneda.usd);
+    });
+
+    test('reverse holo: Cardmarket usa los campos -holo y omite TCGplayer si no tiene esa variante', () {
+      final c = leerCartaTcgdex(fixture('tcgdex_carta_es.json'), acabado: Acabado.reverseHolo);
+      expect(c.cotizaciones.map((q) => q.detalle),
+          ['cardmarket trend-holo vía TCGdex', 'cardmarket avg30-holo vía TCGdex']);
+      expect(c.cotizaciones.first.valor, 11.56);
+    });
+
+    test('normal: si TCGplayer solo tiene holofoil, se usa como respaldo', () {
+      final c = leerCartaTcgdex(fixture('tcgdex_carta_es.json'));
+      expect(c.cotizaciones.map((q) => q.detalle), contains('tcgplayer holofoil marketPrice vía TCGdex'));
+    });
+
+    test('búsqueda descarta cartas de TCG Pocket', () async {
+      final pedidas = <Uri>[];
+      final cliente = TcgdexCliente(clienteFalso({
+        '/v2/en/cards': fixture('tcgdex_busqueda.json'),
+      }, pedidas: pedidas));
+      final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'lucario', numeroLocal: '122');
+      expect(r.map((e) => e.id), ['sm6-122', 'dp2-122']);
+      expect(pedidas.single.queryParameters, {'name': 'lucario', 'localId': '122'});
+      expect(const ResultadoTcgdex(id: 'A2b-043', numeroLocal: '043', nombre: 'Lucario ex').esTcgPocket, isTrue);
+    });
+  });
+
+  test('TCGdex reintenta sin ceros a la izquierda si no hay resultados', () async {
+    final pedidas = <String?>[];
+    final cliente = TcgdexCliente(ClienteCortes(
+      pausaMinima: Duration.zero,
+      cliente: MockClient((req) async {
+        final local = req.url.queryParameters['localId'];
+        pedidas.add(local);
+        return http.Response(local == '25' ? '[{"id":"sv3pt5-25","localId":"25","name":"Pikachu"}]' : '[]', 200);
+      }),
+    ));
+    final r = await cliente.buscar(idioma: Idioma.ingles, nombre: 'pikachu', numeroLocal: '025');
+    expect(pedidas, ['025', '25']);
+    expect(r.single.id, 'sv3pt5-25');
+  });
+
+  group('mindicador', () {
+    test('lee dólar y euro', () {
+      final t = leerMindicador(fixture('mindicador.json'));
+      expect(t.usd, 993.22);
+      expect(t.eur, 1109.37);
+      expect(t.aClp(10, Moneda.usd), closeTo(9932.2, 0.001));
+    });
+
+    test('si el servicio falla usa el último tipo de cambio conocido', () async {
+      final cliente = MindicadorCliente(ClienteCortes(
+        pausaMinima: Duration.zero,
+        cliente: MockClient((_) async => http.Response('', 503)),
+      ));
+      final ultimo = TipoCambio(usd: 950, eur: 1000, fecha: DateTime(2026, 10, 29));
+      expect((await cliente.obtener(ultimoConocido: ultimo)).usd, 950);
+      expect(cliente.obtener(), throwsA(isA<FuenteNoDisponible>()));
+    });
+  });
+}

@@ -1,0 +1,27 @@
+name: Núcleo (pokecotiza_core)
+
+on:
+  pull_request:
+    paths: ['packages/core/**', '.github/workflows/core.yml']
+  push:
+    branches: [main]
+    paths: ['packages/core/**', '.github/workflows/core.yml']
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.7
+      - run: dart pub get
+      - name: Formato
+        run: dart format --line-length 120 --output=none --set-exit-if-changed .
+      - name: Análisis estático
+        run: dart analyze --fatal-infos
+      - name: Pruebas
+        run: dart test

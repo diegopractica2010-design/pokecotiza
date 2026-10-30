@@ -17,6 +17,8 @@
 Ninguna por ahora.
 
 ## Técnicas (a verificar)
+- Significado exacto de los campos `-holo` de Cardmarket (deducido: reverse holo).
+- Estabilidad de mindicador.cl (no respondió varias veces el 2026-10-30) y fuente alternativa de tipo de cambio.
 - Estado actual y límites gratuitos de pokemontcg.io, pokemontcgapi.com y TCGdex.
 - Qué fuentes entregan **ventas reales** (no solo publicaciones): ventas completadas de eBay; si el "market price" de TCGplayer y el "trend" de Cardmarket se calculan con ventas; si TCGmatch muestra ventas cerradas.
 - Términos de uso de cada sitio a scrapear (solo se revisó robots.txt).
