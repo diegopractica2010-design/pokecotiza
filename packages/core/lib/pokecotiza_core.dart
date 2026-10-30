@@ -3,6 +3,7 @@
 /// tarea diaria.
 library;
 
+export 'src/cotizador.dart';
 export 'src/errores.dart';
 export 'src/fuentes/mindicador.dart';
 export 'src/fuentes/tcgdex.dart';
