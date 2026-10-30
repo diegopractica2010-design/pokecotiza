@@ -29,3 +29,7 @@
 | 25 | 2026-10-30 | Escribir con RAW y leer con UNFORMATTED_VALUE | Evita que Google convierta "007/091" en fecha y que los números lleguen con formato regional | USER_ENTERED / FORMATTED_VALUE |
 | 26 | 2026-10-30 | La app crea la planilla y usa el permiso `drive.file` | Acceso solo a archivos de la app; el mismo permiso sirve para las fotos | Permiso `spreadsheets` (todas las planillas del usuario) |
 | 27 | 2026-10-30 | Eliminar una carta conserva su historial de precios | El historial sirve para ver la evolución de la colección | Borrar también sus precios |
+| 28 | 2026-10-30 | Windows inicia sesión con `googleapis_auth` (navegador) y Android con `google_sign_in` | `google_sign_in` no es compatible con Windows (pub.dev) | Un solo paquete para ambos |
+| 29 | 2026-10-30 | La app guarda primero en el dispositivo, con el mismo formato de fila que la planilla | Se puede probar sin credenciales de Google y pasar después a Sheets sin convertir datos | Exigir Google desde el inicio |
+| 30 | 2026-10-30 | GitHub Actions compila el APK y la versión de Windows | Este entorno es Linux, sin Android SDK ni Windows | Compilar a mano en el PC del dueño |
+| 31 | 2026-10-30 | En TCGmatch se pega el enlace; el navegador dentro de la app queda para después | `webview_flutter` no es compatible con Windows; pegar el enlace funciona en ambos | `flutter_inappwebview` desde el inicio |
