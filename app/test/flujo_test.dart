@@ -33,19 +33,28 @@ class AlmacenMemoria implements Almacen {
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async => cots[idCarta] = c;
   @override
   Future<void> eliminarCotizacion(String idCarta) async => cots.remove(idCarta);
+  final List<PuntoValor> resumen = [];
+  @override
+  Future<List<PuntoValor>> historialCarta(CartaColeccion carta) async => const [];
+  @override
+  Future<List<PuntoValor>> historialColeccion() async => resumen;
+  @override
+  Future<void> registrarResumen(({int publicadoClp, int ventasClp}) total, int cartas, DateTime fecha) async =>
+      resumen.add(PuntoValor(fecha: fecha, publicadoClp: total.publicadoClp, ventasClp: total.ventasClp));
   @override
   Future<TipoCambio?> leerTipoCambio() async => cambio;
   @override
   Future<void> guardarTipoCambio(TipoCambio t) async => cambio = t;
 }
 
-EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false}) {
+EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false, bool fuentesCaidas = false}) {
   http.Response r(String cuerpo, String tipo) =>
       http.Response.bytes(utf8.encode(cuerpo), 200, headers: {'content-type': '$tipo; charset=utf-8'});
   final cliente = ClienteCortes(
     pausaMinima: Duration.zero,
     cliente: MockClient((req) async {
       final u = req.url;
+      if (fuentesCaidas && (u.host == 'tcgmatch.cl' || u.host == 'api.tcgdex.net')) return http.Response('', 503);
       if (u.host == 'tcgmatch.cl') return r(fixture('tcgmatch_catalogo.html'), 'text/html');
       if (u.host == 'mindicador.cl') {
         return mindicadorCaido

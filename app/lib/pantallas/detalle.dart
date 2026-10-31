@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../servicios/estado.dart';
 import '../util/formato.dart';
 import 'confirmar.dart';
+import 'historial_futuro.dart';
 
 class PantallaDetalle extends StatelessWidget {
   const PantallaDetalle({super.key, required this.estado, required this.idCarta});
@@ -98,6 +99,10 @@ class PantallaDetalle extends StatelessWidget {
                         'Sin vínculo con TCGmatch: falta el precio del mercado chileno. Usa "Editar" para pegar el enlace.'),
                   ),
                 ),
+              const SizedBox(height: 16),
+              Text('Evolución', style: estilo.titleSmall),
+              const SizedBox(height: 8),
+              HistorialFuturo(version: estado.versionHistorial, cargar: () => estado.almacen.historialCarta(carta)),
               const SizedBox(height: 16),
               if (cot != null && cot.cotizaciones.isNotEmpty) ...[
                 Text('Precios por fuente', style: estilo.titleSmall),
