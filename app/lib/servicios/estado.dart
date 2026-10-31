@@ -87,6 +87,16 @@ class EstadoApp extends ChangeNotifier {
       final cambio =
           carta.gradeo != null ? (tipoCambio ?? TipoCambio(usd: 0, eur: 0, fecha: DateTime.now())) : await _cambio();
       final r = await cotizador.cotizar(carta, cambio);
+      final anterior = cotizaciones[carta.id];
+      if (r.cotizaciones.isEmpty && r.fallas.isNotEmpty && !r.valor.manual) {
+        // Todas sus fuentes fallaron: se conserva el último precio bueno en vez
+        // de reemplazarlo por uno vacío.
+        error =
+            'No se pudo actualizar ${carta.nombre}: ${r.fallas.entries.map((e) => '${e.key} no respondió').join(', ')}.'
+            '${anterior == null ? '' : ' Se mantiene su último precio.'}';
+        notifyListeners();
+        return null;
+      }
       final g = CotizacionGuardada(fecha: r.fecha, valor: r.valor, cotizaciones: r.cotizaciones, fallas: r.fallas);
       await almacen.guardarCotizacion(carta.id, g);
       cotizaciones[carta.id] = g;
@@ -113,13 +123,19 @@ class EstadoApp extends ChangeNotifier {
     try {
       final lista = [...cartas];
       var cotizadas = 0;
+      var sinValorPorFalla = 0;
       for (var i = 0; i < lista.length; i++) {
-        if (await cotizarUna(lista[i]) != null) cotizadas++;
+        if (await cotizarUna(lista[i]) != null) {
+          cotizadas++;
+        } else if (cotizaciones[lista[i].id] == null) {
+          sinValorPorFalla++; // falló y no tiene un precio anterior
+        }
         progreso = (i + 1, lista.length);
         notifyListeners();
       }
-      // El total del día alimenta el gráfico de la colección.
-      if (cotizadas > 0) {
+      // El total del día alimenta el gráfico de la colección. No se registra
+      // si alguna carta quedó sin valor por una falla: sería una baja falsa.
+      if (cotizadas > 0 && sinValorPorFalla == 0) {
         await almacen.registrarResumen(total, lista.length, DateTime.now());
         versionHistorial++;
       }
@@ -151,9 +167,10 @@ class EstadoApp extends ChangeNotifier {
       final i = cartas.indexWhere((x) => x.id == c.id);
       if (i >= 0) {
         if (!mismaCarta(cartas[i], c)) {
-          // Ahora es otra carta: su precio guardado ya no corresponde.
+          // Ahora es otra carta: su precio guardado y su historial ya no corresponden.
           cotizaciones.remove(c.id);
           await almacen.eliminarCotizacion(c.id);
+          versionHistorial++;
         }
         cartas[i] = c;
       } else {

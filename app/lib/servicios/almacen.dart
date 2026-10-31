@@ -66,7 +66,8 @@ abstract class Almacen {
   Future<Map<String, CotizacionGuardada>> leerCotizaciones();
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c);
 
-  /// Olvida la última cotización de una carta (por ejemplo, si cambió de carta).
+  /// Olvida la última cotización y el historial de una carta (por ejemplo, si
+  /// su id pasó a ser otra carta). El historial se muestra solo desde ahora.
   Future<void> eliminarCotizacion(String idCarta);
 
   /// Evolución del valor de una carta, de la más antigua a la más reciente.
@@ -244,8 +245,18 @@ class AlmacenLocal implements Almacen {
   Future<void> eliminarCotizacion(String idCarta) => _enCola(() async {
         final datos = await _leer();
         (datos['cotizaciones'] as Map?)?.remove(idCarta);
+        (datos['historial'] as Map?)?.remove(idCarta);
+        final desde = Map<String, dynamic>.from(datos['historialDesde'] as Map? ?? {});
+        desde[idCarta] = DateTime.now().toUtc().toIso8601String();
+        datos['historialDesde'] = desde;
         await _escribir(datos);
       });
+
+  /// Desde cuándo vale el historial de una carta (null = desde siempre).
+  Future<DateTime?> historialDesde(String idCarta) async {
+    final v = ((await _leer())['historialDesde'] as Map?)?[idCarta];
+    return v is String ? DateTime.tryParse(v) : null;
+  }
 
   @override
   Future<TipoCambio?> leerTipoCambio() async {
@@ -311,14 +322,25 @@ class AlmacenPlanilla implements Almacen {
   @override
   Future<void> eliminarCotizacion(String idCarta) => cache.eliminarCotizacion(idCarta);
 
-  /// Del historial de la planilla; si Google no responde, de la copia local.
+  /// Une el historial de la planilla con el del dispositivo (puntos de antes
+  /// de conectar Google y de cartas gradeadas, que no tienen filas en Precios).
+  /// En una misma fecha manda la planilla. Si Google no responde, solo el local.
   @override
   Future<List<PuntoValor>> historialCarta(CartaColeccion carta) async {
+    final local = await cache.historialCarta(carta);
+    List<PuntoValor> nube;
     try {
-      return puntosDesdeHistorial(carta, await planilla.historial(carta.id));
+      nube = puntosDesdeHistorial(carta, await planilla.historial(carta.id));
     } on Exception {
-      return cache.historialCarta(carta);
+      return local;
     }
+    final desde = await cache.historialDesde(carta.id);
+    final porFecha = <DateTime, PuntoValor>{
+      for (final p in local) p.fecha: p,
+      for (final p in nube)
+        if (desde == null || !p.fecha.isBefore(desde)) p.fecha: p,
+    };
+    return porFecha.values.toList()..sort((a, b) => a.fecha.compareTo(b.fecha));
   }
 
   @override

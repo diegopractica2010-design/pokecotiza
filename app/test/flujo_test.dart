@@ -47,13 +47,14 @@ class AlmacenMemoria implements Almacen {
   Future<void> guardarTipoCambio(TipoCambio t) async => cambio = t;
 }
 
-EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false}) {
+EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false, bool fuentesCaidas = false}) {
   http.Response r(String cuerpo, String tipo) =>
       http.Response.bytes(utf8.encode(cuerpo), 200, headers: {'content-type': '$tipo; charset=utf-8'});
   final cliente = ClienteCortes(
     pausaMinima: Duration.zero,
     cliente: MockClient((req) async {
       final u = req.url;
+      if (fuentesCaidas && (u.host == 'tcgmatch.cl' || u.host == 'api.tcgdex.net')) return http.Response('', 503);
       if (u.host == 'tcgmatch.cl') return r(fixture('tcgmatch_catalogo.html'), 'text/html');
       if (u.host == 'mindicador.cl') {
         return mindicadorCaido
