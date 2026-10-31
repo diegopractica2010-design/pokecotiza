@@ -95,6 +95,12 @@ jobs:
           flutter build windows --release
           --dart-define=GOOGLE_DESKTOP_CLIENT_ID="$GOOGLE_DESKTOP_CLIENT_ID"
           --dart-define=GOOGLE_DESKTOP_CLIENT_SECRET="$GOOGLE_DESKTOP_CLIENT_SECRET"
+      - name: Incluir el runtime de Visual C++
+        shell: pwsh
+        run: |
+          foreach ($dll in 'msvcp140.dll','vcruntime140.dll','vcruntime140_1.dll') {
+            Copy-Item "$env:WINDIR\System32\$dll" build/windows/x64/runner/Release/
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: pokecotiza-windows

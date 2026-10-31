@@ -13,7 +13,7 @@
 
 ## Windows
 1. Descarga el `.zip` y descomprímelo en una carpeta propia (por ejemplo, `Documentos\PokeCotiza`).
-2. Abre `pokecotiza.exe`. Windows SmartScreen puede advertir que la app no está firmada: "Más información → Ejecutar de todas formas".
+2. Abre `pokecotiza.exe` (el zip ya trae las DLL de Visual C++ que necesita). Windows SmartScreen puede advertir que la app no está firmada: "Más información → Ejecutar de todas formas".
 3. Opcional: clic derecho en `pokecotiza.exe` → "Anclar a Inicio".
 
 **Actualizar:** reemplaza la carpeta por la nueva. La colección local se guarda aparte (en la carpeta de datos de la app), así que no se pierde.
@@ -35,4 +35,4 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-El workflow "Publicar versión" compila, prueba y crea el Release con los dos instaladores. También se puede crear desde GitHub: **Releases → Draft a new release → Choose a tag → v0.1.0**.
+El workflow "Publicar versión" compila, prueba y crea el Release con los dos instaladores. También se puede crear desde GitHub: **Releases → Draft a new release → Choose a tag → v0.1.0 → Publish**; el workflow le agrega los instaladores unos minutos después.
