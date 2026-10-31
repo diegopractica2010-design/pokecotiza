@@ -56,6 +56,7 @@ EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false, 
       final u = req.url;
       if (fuentesCaidas && (u.host == 'tcgmatch.cl' || u.host == 'api.tcgdex.net')) return http.Response('', 503);
       if (u.host == 'tcgmatch.cl') return r(fixture('tcgmatch_catalogo.html'), 'text/html');
+      if (u.host == 'www.afkstore.cl') return r(fixture('afk_producto.js'), 'application/json');
       if (u.host == 'mindicador.cl') {
         return mindicadorCaido
             ? http.Response('<html>error</html>', 200)
@@ -71,11 +72,19 @@ EstadoApp estadoDePrueba(AlmacenMemoria almacen, {bool mindicadorCaido = false, 
   final tcgmatch = TcgmatchCliente(cliente);
   return EstadoApp(
     almacen: almacen,
-    cotizador: Cotizador(tcgdex: tcgdex, tcgmatch: tcgmatch, mindicador: MindicadorCliente(cliente)),
+    cotizador: Cotizador(
+        tcgdex: tcgdex,
+        tcgmatch: tcgmatch,
+        mindicador: MindicadorCliente(cliente),
+        tiendas: TiendaShopifyCliente(cliente)),
     tcgdex: tcgdex,
     tcgmatch: tcgmatch,
   );
 }
+
+/// La lista desplazable de la pantalla visible (no la de un campo de texto).
+final listaPrincipal =
+    find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable), matchRoot: true).first;
 
 void main() {
   testWidgets('agregar una carta: buscar, confirmar con TCGmatch y ver su valor', (tester) async {
@@ -99,10 +108,10 @@ void main() {
     expect(find.text('Confirmar carta'), findsOneWidget);
     await tester.tap(find.text('Holo'));
     await tester.scrollUntilVisible(find.widgetWithText(TextField, 'Enlace de TCGmatch (opcional)'), 200,
-        scrollable: find.byType(Scrollable).last);
+        scrollable: listaPrincipal);
     await tester.enterText(
         find.widgetWithText(TextField, 'Enlace de TCGmatch (opcional)'), 'https://tcgmatch.cl/producto/catalogo/43946');
-    await tester.scrollUntilVisible(find.text('Guardar y cotizar'), 200, scrollable: find.byType(Scrollable).last);
+    await tester.scrollUntilVisible(find.text('Guardar y cotizar'), 200, scrollable: listaPrincipal);
     await tester.tap(find.text('Guardar y cotizar'));
     await tester.pumpAndSettle();
 
@@ -115,6 +124,30 @@ void main() {
     expect(cot.valor.publicadoClp, isNotNull);
     expect(cot.fallas, isEmpty);
     expect(almacen.cambio?.usd, 993.22);
+  });
+
+  testWidgets('vincular AFK Store suma su precio a la cotización', (tester) async {
+    final almacen = AlmacenMemoria();
+    final estado = estadoDePrueba(almacen);
+    await tester.pumpWidget(PokeCotizaApp(estado: estado));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Agregar carta'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Nombre'), 'Lucario');
+    await tester.tap(find.text('Buscar en TCGdex'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('sm6-122 · número 122'));
+    await tester.pumpAndSettle();
+    final campo = find.widgetWithText(TextField, 'Enlace de AFK Store (opcional)');
+    await tester.scrollUntilVisible(campo, 200, scrollable: listaPrincipal);
+    await tester.enterText(campo, 'https://www.afkstore.cl/products/mega-charizard-x-ex-125-094');
+    await tester.scrollUntilVisible(find.text('Guardar y cotizar'), 200, scrollable: listaPrincipal);
+    await tester.tap(find.text('Guardar y cotizar'));
+    await tester.pumpAndSettle();
+    final carta = almacen.cartas.values.single;
+    expect(carta.enlacesTiendas, {'afkstore': 'mega-charizard-x-ex-125-094'});
+    // La carta es en español NM: la variante "Español" de la tienda vale $350.000.
+    expect(almacen.cots[carta.id]!.cotizaciones.where((c) => c.fuente == 'AFK Store').single.valor, 350000);
   });
 
   testWidgets('un enlace que no es de TCGmatch muestra un error y no guarda', (tester) async {
@@ -130,9 +163,9 @@ void main() {
     await tester.tap(find.text('sm6-122 · número 122'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.widgetWithText(TextField, 'Enlace de TCGmatch (opcional)'), 200,
-        scrollable: find.byType(Scrollable).last);
+        scrollable: listaPrincipal);
     await tester.enterText(find.widgetWithText(TextField, 'Enlace de TCGmatch (opcional)'), 'https://otro.cl/x');
-    await tester.scrollUntilVisible(find.text('Guardar y cotizar'), 200, scrollable: find.byType(Scrollable).last);
+    await tester.scrollUntilVisible(find.text('Guardar y cotizar'), 200, scrollable: listaPrincipal);
     await tester.tap(find.text('Guardar y cotizar'));
     await tester.pumpAndSettle();
     expect(find.textContaining('no es de una carta de TCGmatch'), findsOneWidget);

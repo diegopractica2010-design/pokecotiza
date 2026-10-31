@@ -2,6 +2,7 @@
 
 ## [Sin publicar]
 ### Añadido
+- Fase 9: AFK Store como fuente de precios en Chile (feed Shopify, variante por idioma y condición); columna `tiendas` en la planilla (esquema v2).
 - Fase 11: historial de valor por carta y de la colección, con gráficos en la colección y en el detalle.
 - Fase 8: importar cartas desde Excel (encabezados flexibles, errores por fila) y exportar la colección a Excel.
 - Fase 6: tarea diaria en GitHub Actions (`tools/actualizador`) que cotiza la colección y registra precios y resumen en la planilla; lógica `actualizarColeccion` en el núcleo con 3 pruebas.

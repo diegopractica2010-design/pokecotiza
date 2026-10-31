@@ -13,7 +13,7 @@ Iniciada el 2026-10-30. Código en `packages/core/lib/src/planilla/`.
 ## Estructura de la planilla
 | Pestaña | Columnas |
 |---|---|
-| `Coleccion` | id, nombre, idioma (en/es/ja), codigo_set, numero, regulacion, condicion (NM/LP/MP/HP/DMG), acabado (normal/holo/reverseHolo), gradeadora, nota_gradeo, cantidad, tcgdex_id, tcgmatch_id, valor_manual_clp, foto_url, fecha_alta |
+| `Coleccion` | id, nombre, idioma (en/es/ja), codigo_set, numero, regulacion, condicion (NM/LP/MP/HP/DMG), acabado (normal/holo/reverseHolo), gradeadora, nota_gradeo, cantidad, tcgdex_id, tcgmatch_id, valor_manual_clp, foto_url, fecha_alta, tiendas (v2) |
 | `Precios` | fecha (registro), id_carta, fuente, tipo (publicado/ventas), moneda, valor, valor_clp, detalle, url, fecha_fuente (fecha del dato según la fuente) |
 | `Resumen` | fecha, publicado_clp, ventas_clp, cartas |
 | `Config` | clave, valor (version_esquema, tipo_cambio_usd, tipo_cambio_eur, tipo_cambio_fecha) |

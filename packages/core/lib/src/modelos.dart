@@ -81,6 +81,7 @@ class CartaColeccion {
     this.valorManualClp,
     this.fotoUrl,
     this.fechaAlta,
+    this.enlacesTiendas = const {},
   });
 
   final String id;
@@ -108,6 +109,9 @@ class CartaColeccion {
   /// Enlace a la foto en Google Drive.
   final String? fotoUrl;
   final DateTime? fechaAlta;
+
+  /// Producto vinculado en cada tienda chilena: id de tienda → handle.
+  final Map<String, String> enlacesTiendas;
 }
 
 /// Un precio obtenido de una fuente.

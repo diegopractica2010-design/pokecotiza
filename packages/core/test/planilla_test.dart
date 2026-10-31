@@ -40,7 +40,7 @@ void main() {
     expect(falso.hojas.keys, Esquema.pestanas);
     expect(falso.hojas['Coleccion']!.first, Esquema.columnasColeccion);
     expect(falso.hojas['Precios']!.first, Esquema.columnasPrecios);
-    expect(falso.hojas['Config']![1], ['version_esquema', '1']);
+    expect(falso.hojas['Config']![1], ['version_esquema', '2']);
   });
 
   test('las peticiones usan el token, RAW al escribir y valores sin formato al leer', () async {

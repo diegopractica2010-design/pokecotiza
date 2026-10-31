@@ -7,6 +7,7 @@ export 'src/actualizacion.dart';
 export 'src/cotizador.dart';
 export 'src/errores.dart';
 export 'src/fuentes/mindicador.dart';
+export 'src/fuentes/shopify.dart';
 export 'src/fuentes/tcgdex.dart';
 export 'src/fuentes/tcgmatch.dart';
 export 'src/http/cliente_cortes.dart';
