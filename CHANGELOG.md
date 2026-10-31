@@ -2,6 +2,7 @@
 
 ## [Sin publicar]
 ### Añadido
+- Fase 7: leer la carta con la cámara en Android (ML Kit en el teléfono, latino y japonés) y buscarla automáticamente.
 - Fase 9: AFK Store como fuente de precios en Chile (feed Shopify, variante por idioma y condición); columna `tiendas` en la planilla (esquema v2).
 - Fase 11: historial de valor por carta y de la colección, con gráficos en la colección y en el detalle.
 - Fase 8: importar cartas desde Excel (encabezados flexibles, errores por fila) y exportar la colección a Excel.

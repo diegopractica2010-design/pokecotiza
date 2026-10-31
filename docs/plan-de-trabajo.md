@@ -11,7 +11,7 @@ Cada fase termina con algo usable y se revisa antes de pasar a la siguiente.
 | **4. App: ingreso manual y cotización** 🚧 ([detalle](fase-4-app.md)) | Primera versión usable | Inicio de sesión con Google y prueba contra Sheets real; pantallas Colección / Agregar (manual) / Confirmar / Detalle, en Android y Windows | 2, 3 |
 | **5. Mercados internacionales** ✅ (TCGplayer y Cardmarket vía TCGdex, fase 2) | Precios de referencia | Adaptadores TCGplayer y Cardmarket (vía API) | 1, 2 |
 | **6. Tarea diaria** 🚧 ([detalle](tarea-diaria.md)) | Historial automático | `tools/actualizador` + workflow de GitHub Actions + pestaña Resumen | 3, 5 |
-| **7. Cámara (Android)** | Escanear cartas | OCR + parser + resolución de candidatas | 2, 4 |
+| **7. Cámara (Android)** ✅ ([detalle](fase-7-camara.md); falta probar con fotos reales) | Escanear cartas | OCR + parser + resolución de candidatas | 2, 4 |
 | **8. Importar/Exportar** ✅ ([detalle](fase-8-excel.md); en Android y Windows) | Carga masiva | Importar .xlsx/Sheets con validación; exportar .xlsx | 3, 4 |
 | **9. Mercados chilenos** ✅ ([detalle](fase-9-tiendas.md): AFK Store) | Precios en CLP | Mercado Libre + tiendas que indique el dueño | 1 |
 | **10. Japonés y gradeadas** | Cobertura completa | Adaptadores JP y de gradeadas según la investigación de la fase 1 | 1, 7 |

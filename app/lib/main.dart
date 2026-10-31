@@ -8,15 +8,17 @@ import 'pantallas/coleccion.dart';
 import 'servicios/ajustes.dart';
 import 'servicios/almacen.dart';
 import 'servicios/estado.dart';
+import 'servicios/lector_foto.dart';
 import 'servicios/sesion_google.dart';
 
 /// Lo que necesitan las pantallas además del estado: ajustes y Google.
 class Contexto {
-  Contexto({required this.ajustes, required this.local, required this.sesion});
+  Contexto({required this.ajustes, required this.local, required this.sesion, this.lector});
 
   final Ajustes ajustes;
   final AlmacenLocal local;
   final SesionGoogle? sesion;
+  final LectorFoto? lector;
 
   SheetsCliente crearSheets(SesionGoogle s) => SheetsCliente(s.token);
 }
@@ -31,7 +33,7 @@ Future<void> main() async {
   final local = AlmacenLocal(File(ruta('coleccion.json')));
   final ajustes = Ajustes(File(ruta('ajustes.json')));
   await ajustes.cargar();
-  final contexto = Contexto(ajustes: ajustes, local: local, sesion: crearSesionGoogle());
+  final contexto = Contexto(ajustes: ajustes, local: local, sesion: crearSesionGoogle(), lector: crearLectorFoto());
 
   final estado = EstadoApp(
     almacen: local,

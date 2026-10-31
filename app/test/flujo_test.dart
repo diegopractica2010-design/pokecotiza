@@ -8,6 +8,8 @@ import 'package:http/testing.dart';
 import 'package:pokecotiza/main.dart';
 import 'package:pokecotiza/servicios/almacen.dart';
 import 'package:pokecotiza/servicios/estado.dart';
+import 'package:pokecotiza/servicios/lector_foto.dart';
+import 'package:pokecotiza/pantallas/agregar.dart';
 import 'package:pokecotiza_core/pokecotiza_core.dart';
 
 /// Respuestas reales guardadas del núcleo (2026-10-30).
@@ -150,6 +152,32 @@ void main() {
     expect(almacen.cots[carta.id]!.cotizaciones.where((c) => c.fuente == 'AFK Store').single.valor, 350000);
   });
 
+  testWidgets('la cámara lee el texto, completa los datos y busca sola', (tester) async {
+    final estado = estadoDePrueba(AlmacenMemoria());
+    final lector = _LectorFalso('STAGE 1\nLucario-GX HP 210\nAura Strike 30+\n5ban Graphics 122/131');
+    await tester.pumpWidget(MaterialApp(home: PantallaAgregar(estado: estado, lector: lector)));
+    await tester.tap(find.text('Leer la carta con la cámara'));
+    await tester.pumpAndSettle();
+    expect(lector.idiomaPedido, Idioma.espanol); // idioma elegido en la pantalla
+    expect(find.widgetWithText(TextField, 'Lucario-GX'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '122/131'), findsOneWidget);
+    expect(find.text('sm6-122 · número 122'), findsOneWidget);
+  });
+
+  testWidgets('si la foto no tiene un nombre legible, lo dice y no busca', (tester) async {
+    final estado = estadoDePrueba(AlmacenMemoria());
+    await tester.pumpWidget(MaterialApp(home: PantallaAgregar(estado: estado, lector: _LectorFalso('122/131'))));
+    await tester.tap(find.text('Leer la carta con la cámara'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('No se pudo leer el nombre'), findsOneWidget);
+    expect(find.textContaining('Elige la carta correcta'), findsNothing);
+  });
+
+  testWidgets('sin cámara (Windows) no se muestra el botón', (tester) async {
+    await tester.pumpWidget(MaterialApp(home: PantallaAgregar(estado: estadoDePrueba(AlmacenMemoria()))));
+    expect(find.text('Leer la carta con la cámara'), findsNothing);
+  });
+
   testWidgets('un enlace que no es de TCGmatch muestra un error y no guarda', (tester) async {
     final almacen = AlmacenMemoria();
     final estado = estadoDePrueba(almacen);
@@ -227,4 +255,15 @@ void main() {
     expect(estado.progreso, isNull);
     expect(estado.error, contains('mindicador'));
   });
+}
+
+class _LectorFalso implements LectorFoto {
+  _LectorFalso(this.texto);
+  final String texto;
+  Idioma? idiomaPedido;
+  @override
+  Future<String?> leer(Idioma idioma) async {
+    idiomaPedido = idioma;
+    return texto;
+  }
 }

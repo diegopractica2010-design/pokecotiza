@@ -60,3 +60,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Modelo de ML Kit para leer cartas japonesas (el latino viene incluido).
+    implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
+}
