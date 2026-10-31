@@ -65,8 +65,8 @@ class PantallaColeccion extends StatelessWidget {
             ],
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () =>
-                Navigator.push(context, MaterialPageRoute(builder: (_) => PantallaAgregar(estado: estado))),
+            onPressed: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => PantallaAgregar(estado: estado, lector: contexto?.lector))),
             icon: const Icon(Icons.add),
             label: const Text('Agregar carta'),
           ),

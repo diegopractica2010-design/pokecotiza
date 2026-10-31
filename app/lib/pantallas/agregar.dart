@@ -3,13 +3,17 @@ import 'package:pokecotiza_core/pokecotiza_core.dart';
 
 import '../servicios/estado.dart';
 import '../util/formato.dart';
+import '../servicios/lector_foto.dart';
 import 'confirmar.dart';
 
 /// Paso 1: datos de la carta (a mano o pegando su texto) y búsqueda en TCGdex.
 class PantallaAgregar extends StatefulWidget {
-  const PantallaAgregar({super.key, required this.estado});
+  const PantallaAgregar({super.key, required this.estado, this.lector});
 
   final EstadoApp estado;
+
+  /// Null si no hay cámara con lectura de texto (Windows, pruebas).
+  final LectorFoto? lector;
 
   @override
   State<PantallaAgregar> createState() => _PantallaAgregarState();
@@ -22,7 +26,18 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
   Idioma _idioma = Idioma.espanol;
   List<ResultadoTcgdex>? _candidatas;
   bool _buscando = false;
+  bool _leyendoFoto = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    // Si Android cerró la app con la cámara abierta, recupera esa foto.
+    final lector = widget.lector;
+    if (lector != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _procesarFoto(() => lector.recuperarPendiente(_idioma)));
+    }
+  }
 
   @override
   void dispose() {
@@ -38,6 +53,36 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
       if (d.nombre != null) _nombre.text = d.nombre!;
       if (d.numero != null) _numero.text = d.numero!;
     });
+  }
+
+  Future<void> _foto() => _procesarFoto(() => widget.lector!.leer(_idioma));
+
+  Future<void> _procesarFoto(Future<String?> Function() obtener) async {
+    setState(() {
+      _leyendoFoto = true;
+      _error = null;
+    });
+    try {
+      final texto = await obtener();
+      if (texto == null || !mounted) return;
+      // Resultados de una búsqueda anterior ya no corresponden a esta foto.
+      setState(() => _candidatas = null);
+      _texto.text = texto;
+      final d = leerTextoCarta(texto);
+      setState(() {
+        _nombre.text = d.nombre ?? '';
+        _numero.text = d.numero ?? '';
+      });
+      if (d.nombre == null) {
+        setState(() => _error = 'No se pudo leer el nombre. Revisa la foto (buena luz, sin reflejos) o escríbelo.');
+        return;
+      }
+      await _buscar();
+    } on Object catch (e) {
+      if (mounted) setState(() => _error = 'No se pudo leer la foto: $e');
+    } finally {
+      if (mounted) setState(() => _leyendoFoto = false);
+    }
   }
 
   Future<void> _buscar() async {
@@ -96,6 +141,19 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (widget.lector != null) ...[
+            FilledButton.tonalIcon(
+              onPressed: _leyendoFoto || _buscando ? null : _foto,
+              icon: _leyendoFoto
+                  ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.photo_camera),
+              label: const Text('Leer la carta con la cámara'),
+            ),
+            const SizedBox(height: 4),
+            Text('Elige primero el idioma de la carta. Foto de frente, con buena luz y sin reflejos.',
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 8),
+          ],
           ExpansionTile(
             title: const Text('Pegar el texto de la carta (opcional)'),
             childrenPadding: const EdgeInsets.only(bottom: 12),
@@ -132,7 +190,7 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
                 labelText: 'Número (ej. 122/131)',
                 border: OutlineInputBorder(),
                 helperText: 'El número de abajo de la carta'),
-            onSubmitted: (_) => _buscar(),
+            onSubmitted: (_) => _buscando || _leyendoFoto ? null : _buscar(),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<Idioma>(
@@ -143,7 +201,7 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: _buscando ? null : _buscar,
+            onPressed: _buscando || _leyendoFoto ? null : _buscar,
             icon: _buscando
                 ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.search),

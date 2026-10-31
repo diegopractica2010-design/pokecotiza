@@ -47,6 +47,8 @@ android {
     buildTypes {
         release {
             signingConfig = if (rutaClave != null) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            // Reglas propias (ML Kit) además de las de Flutter.
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
@@ -59,4 +61,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Modelo de ML Kit para leer cartas japonesas (el latino viene incluido).
+    implementation("com.google.mlkit:text-recognition-japanese:16.0.1")
 }
