@@ -16,7 +16,7 @@ Cada fase termina con algo usable y se revisa antes de pasar a la siguiente.
 | **9. Mercados chilenos** ✅ ([detalle](fase-9-tiendas.md): AFK Store) | Precios en CLP | Mercado Libre + tiendas que indique el dueño | 1 |
 | **10. Japonés y gradeadas** | Cobertura completa | Adaptadores JP y de gradeadas según la investigación de la fase 1 | 1, 7 |
 | **11. Historial y gráficos** ✅ ([detalle](fase-11-historial.md)) | Ver evolución | Gráficos por carta y colección | 6 |
-| **12. Publicación** | Instalables | APK firmado (Android) e instalador para Windows, con guía de instalación | todas |
+| **12. Publicación** ✅ ([instalar](instalar.md); workflow `publicar.yml` al crear una etiqueta `v*`) | Instalables | APK firmado (Android) e instalador para Windows, con guía de instalación | todas |
 
 ## Cómo se trabajará
 - Una rama y un pull request por funcionalidad, enlazados a un issue.
