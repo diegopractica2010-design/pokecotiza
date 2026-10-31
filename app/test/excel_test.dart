@@ -56,6 +56,14 @@ void main() {
     // Solo cambia la cantidad: el precio sigue valiendo.
     await estado.importar([const CartaColeccion(id: 'c1', nombre: 'Lucario', idioma: Idioma.espanol, cantidad: 3)]);
     expect(estado.cotizaciones['c1'], isNotNull);
+    // Cambia el producto vinculado en la tienda: el precio anterior ya no corresponde.
+    await estado.importar([
+      const CartaColeccion(
+          id: 'c1', nombre: 'Lucario', idioma: Idioma.espanol, cantidad: 3, enlacesTiendas: {'afkstore': 'otro'})
+    ]);
+    expect(estado.cotizaciones['c1'], isNull);
+    estado.cotizaciones['c1'] = almacen.cots['c1'] =
+        CotizacionGuardada(fecha: DateTime(2026), valor: const ValorCarta(publicadoClp: 30000), cotizaciones: const []);
     // Ahora es otra carta: el precio anterior se olvida.
     await estado.importar([const CartaColeccion(id: 'c1', nombre: 'Charizard', idioma: Idioma.espanol)]);
     expect(estado.cotizaciones['c1'], isNull);
