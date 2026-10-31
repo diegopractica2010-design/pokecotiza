@@ -173,6 +173,28 @@ void main() {
     expect(find.textContaining('Elige la carta correcta'), findsNothing);
   });
 
+  testWidgets('una segunda foto ilegible borra las candidatas de la anterior', (tester) async {
+    final estado = estadoDePrueba(AlmacenMemoria());
+    final lector = _LectorFalso('Lucario-GX HP 210\n122/131');
+    await tester.pumpWidget(MaterialApp(home: PantallaAgregar(estado: estado, lector: lector)));
+    await tester.tap(find.text('Leer la carta con la cámara'));
+    await tester.pumpAndSettle();
+    expect(find.text('sm6-122 · número 122'), findsOneWidget);
+    lector.texto = '???';
+    await tester.tap(find.text('Leer la carta con la cámara'));
+    await tester.pumpAndSettle();
+    expect(find.text('sm6-122 · número 122'), findsNothing);
+  });
+
+  testWidgets('recupera la foto que quedó pendiente si Android cerró la app', (tester) async {
+    final estado = estadoDePrueba(AlmacenMemoria());
+    await tester.pumpWidget(MaterialApp(
+        home: PantallaAgregar(estado: estado, lector: _LectorFalso('', pendiente: 'Lucario-GX HP 210\n122/131'))));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextField, 'Lucario-GX'), findsOneWidget);
+    expect(find.text('sm6-122 · número 122'), findsOneWidget);
+  });
+
   testWidgets('sin cámara (Windows) no se muestra el botón', (tester) async {
     await tester.pumpWidget(MaterialApp(home: PantallaAgregar(estado: estadoDePrueba(AlmacenMemoria()))));
     expect(find.text('Leer la carta con la cámara'), findsNothing);
@@ -258,12 +280,16 @@ void main() {
 }
 
 class _LectorFalso implements LectorFoto {
-  _LectorFalso(this.texto);
-  final String texto;
+  _LectorFalso(this.texto, {this.pendiente});
+  String texto;
+  final String? pendiente;
   Idioma? idiomaPedido;
   @override
   Future<String?> leer(Idioma idioma) async {
     idiomaPedido = idioma;
     return texto;
   }
+
+  @override
+  Future<String?> recuperarPendiente(Idioma idioma) async => pendiente;
 }

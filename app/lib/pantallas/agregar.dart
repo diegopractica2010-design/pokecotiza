@@ -30,6 +30,16 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // Si Android cerró la app con la cámara abierta, recupera esa foto.
+    final lector = widget.lector;
+    if (lector != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _procesarFoto(() => lector.recuperarPendiente(_idioma)));
+    }
+  }
+
+  @override
   void dispose() {
     _texto.dispose();
     _nombre.dispose();
@@ -45,14 +55,18 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
     });
   }
 
-  Future<void> _foto() async {
+  Future<void> _foto() => _procesarFoto(() => widget.lector!.leer(_idioma));
+
+  Future<void> _procesarFoto(Future<String?> Function() obtener) async {
     setState(() {
       _leyendoFoto = true;
       _error = null;
     });
     try {
-      final texto = await widget.lector!.leer(_idioma);
+      final texto = await obtener();
       if (texto == null || !mounted) return;
+      // Resultados de una búsqueda anterior ya no corresponden a esta foto.
+      setState(() => _candidatas = null);
       _texto.text = texto;
       final d = leerTextoCarta(texto);
       setState(() {
@@ -176,7 +190,7 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
                 labelText: 'Número (ej. 122/131)',
                 border: OutlineInputBorder(),
                 helperText: 'El número de abajo de la carta'),
-            onSubmitted: (_) => _buscar(),
+            onSubmitted: (_) => _buscando || _leyendoFoto ? null : _buscar(),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<Idioma>(
@@ -187,7 +201,7 @@ class _PantallaAgregarState extends State<PantallaAgregar> {
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: _buscando ? null : _buscar,
+            onPressed: _buscando || _leyendoFoto ? null : _buscar,
             icon: _buscando
                 ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.search),

@@ -47,6 +47,8 @@ android {
     buildTypes {
         release {
             signingConfig = if (rutaClave != null) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            // Reglas propias (ML Kit) además de las de Flutter.
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
