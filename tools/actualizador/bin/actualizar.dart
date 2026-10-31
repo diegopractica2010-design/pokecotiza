@@ -37,8 +37,11 @@ Future<void> main() async {
   final web = ClienteCortes(userAgent: 'PokeCotiza/0.1 (tarea diaria, uso personal)');
   try {
     final planilla = PlanillaColeccion(SheetsCliente(token, cliente: base), idPlanilla);
-    final cotizador =
-        Cotizador(tcgdex: TcgdexCliente(web), tcgmatch: TcgmatchCliente(web), mindicador: MindicadorCliente(web));
+    final cotizador = Cotizador(
+        tcgdex: TcgdexCliente(web),
+        tcgmatch: TcgmatchCliente(web),
+        mindicador: MindicadorCliente(web),
+        tiendas: TiendaShopifyCliente(web));
     final r = await actualizarColeccion(planilla, cotizador);
     stdout.write(r.resumen());
     final resumenGitHub = Platform.environment['GITHUB_STEP_SUMMARY'];

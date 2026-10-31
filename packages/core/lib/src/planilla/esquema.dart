@@ -5,7 +5,7 @@ import '../modelos.dart';
 /// rompe planillas existentes: agregar columnas solo al final y subir
 /// [versionEsquema].
 abstract final class Esquema {
-  static const versionEsquema = 1;
+  static const versionEsquema = 2;
 
   static const coleccion = 'Coleccion';
   static const precios = 'Precios';
@@ -16,6 +16,7 @@ abstract final class Esquema {
   static const columnasColeccion = [
     'id', 'nombre', 'idioma', 'codigo_set', 'numero', 'regulacion', 'condicion', 'acabado', //
     'gradeadora', 'nota_gradeo', 'cantidad', 'tcgdex_id', 'tcgmatch_id', 'valor_manual_clp', 'foto_url', 'fecha_alta',
+    'tiendas', // v2: "afkstore:handle;otra:handle"
   ];
 
   /// `fecha`: cuándo se registró. `fecha_fuente`: fecha del dato según la fuente
@@ -82,6 +83,7 @@ List<Object?> cartaAFila(CartaColeccion c) => [
       c.valorManualClp ?? '',
       c.fotoUrl ?? '',
       c.fechaAlta?.toUtc().toIso8601String() ?? '',
+      [for (final e in c.enlacesTiendas.entries) '${e.key}:${e.value}'].join(';'),
     ];
 
 /// Convierte una fila en carta. Lanza [FormatoInesperado] si un campo
@@ -137,6 +139,11 @@ CartaColeccion filaACarta(List<Object?> fila) {
     valorManualClp: valorManual,
     fotoUrl: opcional(14),
     fechaAlta: DateTime.tryParse(texto(15)),
+    enlacesTiendas: {
+      for (final par in texto(16).split(';'))
+        if (par.contains(':') && par.split(':')[1].trim().isNotEmpty)
+          par.split(':')[0].trim(): par.split(':')[1].trim(),
+    },
   );
 }
 

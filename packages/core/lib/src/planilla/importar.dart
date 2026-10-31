@@ -24,6 +24,7 @@ const _alias = {
   'valor_manual_clp': ['valor_manual_clp', 'valor_manual'],
   'foto_url': ['foto_url', 'foto'],
   'fecha_alta': ['fecha_alta'],
+  'tiendas': ['tiendas'],
 };
 
 String _normalizar(Object? v) {

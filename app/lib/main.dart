@@ -35,7 +35,8 @@ Future<void> main() async {
 
   final estado = EstadoApp(
     almacen: local,
-    cotizador: Cotizador(tcgdex: tcgdex, tcgmatch: tcgmatch, mindicador: MindicadorCliente(http)),
+    cotizador: Cotizador(
+        tcgdex: tcgdex, tcgmatch: tcgmatch, mindicador: MindicadorCliente(http), tiendas: TiendaShopifyCliente(http)),
     tcgdex: tcgdex,
     tcgmatch: tcgmatch,
   );

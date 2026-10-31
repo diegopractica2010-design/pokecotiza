@@ -22,7 +22,7 @@ Sin esto, la tarea se salta con un aviso, sin fallar.
 ## Qué hace
 `tools/actualizador/bin/actualizar.dart` usa la lógica del núcleo (`actualizarColeccion`):
 1. Tipo de cambio (si mindicador.cl falla, usa el de la planilla).
-2. Cada carta: TCGdex y TCGmatch (pausa de 2 s entre peticiones al mismo sitio). Una fuente que falla no detiene el resto.
+2. Cada carta: TCGdex, TCGmatch y tiendas vinculadas (AFK Store) (pausa de 2 s entre peticiones al mismo sitio). Una fuente que falla no detiene el resto.
 3. Registra precios y resumen. El informe queda en la página de la ejecución en GitHub.
 
 ## Revisión de Codex (PR #8)

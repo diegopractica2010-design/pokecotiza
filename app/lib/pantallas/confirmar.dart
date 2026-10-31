@@ -24,6 +24,10 @@ class _PantallaConfirmarState extends State<PantallaConfirmar> {
   late final _cantidad = TextEditingController(text: '${widget.base.cantidad}');
   late final _enlace = TextEditingController(
       text: widget.base.tcgmatchId == null ? '' : 'https://tcgmatch.cl/producto/catalogo/${widget.base.tcgmatchId}');
+  late final _enlaceAfk = TextEditingController(
+      text: widget.base.enlacesTiendas['afkstore'] == null
+          ? ''
+          : tiendaPorId('afkstore')!.urlProducto(widget.base.enlacesTiendas['afkstore']!).toString());
   late final _empresa = TextEditingController(text: widget.base.gradeo?.empresa ?? 'PSA');
   late final _nota = TextEditingController(text: widget.base.gradeo?.nota ?? '');
   late final _valorManual = TextEditingController(text: widget.base.valorManualClp?.toString() ?? '');
@@ -35,7 +39,7 @@ class _PantallaConfirmarState extends State<PantallaConfirmar> {
 
   @override
   void dispose() {
-    for (final c in [_nombre, _cantidad, _enlace, _empresa, _nota, _valorManual]) {
+    for (final c in [_nombre, _cantidad, _enlace, _enlaceAfk, _empresa, _nota, _valorManual]) {
       c.dispose();
     }
     super.dispose();
@@ -74,6 +78,16 @@ class _PantallaConfirmarState extends State<PantallaConfirmar> {
           return;
         }
       }
+      final enlacesTiendas = Map<String, String>.from(widget.base.enlacesTiendas)..remove('afkstore');
+      if (_enlaceAfk.text.trim().isNotEmpty) {
+        final e = analizarEnlaceTienda(_enlaceAfk.text);
+        if (e == null) {
+          setState(
+              () => _error = 'El enlace de AFK Store debe ser de un producto: https://www.afkstore.cl/products/...');
+          return;
+        }
+        enlacesTiendas[e.tienda.id] = e.handle;
+      }
       final b = widget.base;
       final carta = CartaColeccion(
         id: b.id,
@@ -91,6 +105,7 @@ class _PantallaConfirmarState extends State<PantallaConfirmar> {
         valorManualClp: _gradeada ? valorManual : null,
         fotoUrl: b.fotoUrl,
         fechaAlta: b.fechaAlta ?? DateTime.now(),
+        enlacesTiendas: enlacesTiendas,
       );
       await widget.estado.guardarYCotizar(carta);
       if (!mounted) return;
@@ -199,6 +214,27 @@ class _PantallaConfirmarState extends State<PantallaConfirmar> {
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
                 onPressed: _abrirTcgmatch, icon: const Icon(Icons.open_in_new), label: const Text('Abrir TCGmatch')),
+          ),
+          const SizedBox(height: 16),
+          Text('Otra tienda chilena (AFK Store)', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 4),
+          const Text('Opcional. Se usa el precio de la variante con el mismo idioma y condición, si tiene stock.'),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _enlaceAfk,
+            decoration: const InputDecoration(
+                labelText: 'Enlace de AFK Store (opcional)',
+                border: OutlineInputBorder(),
+                hintText: 'https://www.afkstore.cl/products/...'),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => launchUrl(Uri.https('www.afkstore.cl', '/search', {'q': _nombre.text.trim()}),
+                  mode: LaunchMode.externalApplication),
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Buscar en AFK Store'),
+            ),
           ),
           if (_error != null)
             Padding(

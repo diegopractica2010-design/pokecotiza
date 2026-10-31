@@ -1,5 +1,6 @@
 import 'errores.dart';
 import 'fuentes/mindicador.dart';
+import 'fuentes/shopify.dart';
 import 'fuentes/tcgdex.dart';
 import 'fuentes/tcgmatch.dart';
 import 'modelos.dart';
@@ -22,11 +23,14 @@ class ResultadoCotizacion {
 /// Cotiza cartas de la colección consultando TCGdex y TCGmatch. Lo usan la
 /// app (al agregar o actualizar una carta) y la tarea diaria.
 class Cotizador {
-  Cotizador({required this.tcgdex, required this.tcgmatch, required this.mindicador});
+  Cotizador({required this.tcgdex, required this.tcgmatch, required this.mindicador, this.tiendas});
 
   final TcgdexCliente tcgdex;
   final TcgmatchCliente tcgmatch;
   final MindicadorCliente mindicador;
+
+  /// Tiendas chilenas (Shopify). Null = no se consultan.
+  final TiendaShopifyCliente? tiendas;
 
   /// Tipo de cambio del día; si mindicador.cl falla, usa [ultimoConocido].
   Future<TipoCambio> tipoCambio({TipoCambio? ultimoConocido}) => mindicador.obtener(ultimoConocido: ultimoConocido);
@@ -60,6 +64,21 @@ class Cotizador {
           fallas['TCGmatch'] = e.mensaje;
         } on FormatException catch (e) {
           fallas['TCGmatch'] = 'respuesta ilegible: ${e.message}';
+        }
+      }
+      final clienteTiendas = tiendas;
+      if (clienteTiendas != null) {
+        for (final e in carta.enlacesTiendas.entries) {
+          final tienda = tiendaPorId(e.key);
+          if (tienda == null) continue;
+          try {
+            final p = await clienteTiendas.producto(tienda, e.value);
+            cotizaciones.addAll(cotizacionesDesdeTienda(p, carta, fecha: fecha));
+          } on FuenteNoDisponible catch (x) {
+            fallas[tienda.nombre] = x.mensaje;
+          } on FormatoInesperado catch (x) {
+            fallas[tienda.nombre] = x.mensaje;
+          }
         }
       }
     }

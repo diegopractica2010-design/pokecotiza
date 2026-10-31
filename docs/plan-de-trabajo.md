@@ -13,7 +13,7 @@ Cada fase termina con algo usable y se revisa antes de pasar a la siguiente.
 | **6. Tarea diaria** 🚧 ([detalle](tarea-diaria.md)) | Historial automático | `tools/actualizador` + workflow de GitHub Actions + pestaña Resumen | 3, 5 |
 | **7. Cámara (Android)** | Escanear cartas | OCR + parser + resolución de candidatas | 2, 4 |
 | **8. Importar/Exportar** ✅ ([detalle](fase-8-excel.md); en Android y Windows) | Carga masiva | Importar .xlsx/Sheets con validación; exportar .xlsx | 3, 4 |
-| **9. Mercados chilenos** | Precios en CLP | Mercado Libre + tiendas que indique el dueño | 1 |
+| **9. Mercados chilenos** ✅ ([detalle](fase-9-tiendas.md): AFK Store) | Precios en CLP | Mercado Libre + tiendas que indique el dueño | 1 |
 | **10. Japonés y gradeadas** | Cobertura completa | Adaptadores JP y de gradeadas según la investigación de la fase 1 | 1, 7 |
 | **11. Historial y gráficos** ✅ ([detalle](fase-11-historial.md)) | Ver evolución | Gráficos por carta y colección | 6 |
 | **12. Publicación** | Instalables | APK firmado (Android) e instalador para Windows, con guía de instalación | todas |

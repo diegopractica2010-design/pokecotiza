@@ -182,7 +182,8 @@ class EstadoApp extends ChangeNotifier {
   }
 
   /// True si dos versiones de una carta tienen el mismo precio de mercado
-  /// (cambiar solo la cantidad o la foto no cambia su precio).
+  /// (cambiar solo la cantidad o la foto no cambia su precio; cambiar un
+  /// vínculo con una fuente o tienda, sí).
   static bool mismaCarta(CartaColeccion a, CartaColeccion b) =>
       a.nombre == b.nombre &&
       a.idioma == b.idioma &&
@@ -192,7 +193,11 @@ class EstadoApp extends ChangeNotifier {
       a.tcgdexId == b.tcgdexId &&
       a.tcgmatchId == b.tcgmatchId &&
       a.gradeo?.toString() == b.gradeo?.toString() &&
-      a.valorManualClp == b.valorManualClp;
+      a.valorManualClp == b.valorManualClp &&
+      _mismosEnlaces(a.enlacesTiendas, b.enlacesTiendas);
+
+  static bool _mismosEnlaces(Map<String, String> a, Map<String, String> b) =>
+      a.length == b.length && a.entries.every((e) => b[e.key] == e.value);
 
   /// Cambia dónde se guarda la colección y la vuelve a leer.
   Future<void> cambiarAlmacen(Almacen nuevo) async {

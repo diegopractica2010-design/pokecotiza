@@ -38,3 +38,6 @@
 | 34 | 2026-10-30 | La última cotización de cada carta se guarda también en el dispositivo | La app abre rápido sin leer todo el historial de la planilla | Leer siempre de la planilla |
 | 35 | 2026-10-30 | La tarea diaria usa una cuenta de servicio de Google | No depende de la sesión del usuario (que vence cada 7 días en modo de prueba) | Guardar el token del usuario como secreto |
 | 36 | 2026-10-30 | Si faltan los secretos, la tarea diaria se salta con un aviso | No llenar el historial de ejecuciones fallidas antes de configurarla | Que falle hasta configurarla |
+| 37 | 2026-10-31 | AFK Store vía su feed Shopify, vinculando el producto una vez | Feed público con variantes de idioma y condición; robots.txt lo permite | Leer HTML; buscar automáticamente en cada cotización |
+| 38 | 2026-10-31 | Solo se usa la variante del mismo idioma y condición, con stock | Otra condición u otro idioma tienen otro precio; sin stock no es una oferta vigente | Usar la más barata |
+| 39 | 2026-10-31 | Esquema v2: columna `tiendas` al final de Coleccion | Las planillas v1 se completan solas (prefijo de encabezados) | Una pestaña aparte para vínculos |
