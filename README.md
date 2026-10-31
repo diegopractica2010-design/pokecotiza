@@ -2,32 +2,38 @@
 
 App para **Android y Windows** que valoriza una colección de cartas Pokémon TCG: identifica cada carta (foto, búsqueda manual o planilla), la cotiza en mercados de Chile y del mundo, y guarda la colección y el historial de precios en **Google Sheets**.
 
-> **Estado:** fase 4 (app) en curso. Fases 0 a 3 cerradas.
+> **Estado:** todas las fases del plan tienen código, pruebas y revisión. Falta: configurar credenciales de Google y la clave de firma de Android (pasos del dueño), y probar en un teléfono y un PC reales.
 >
-> **Probar la app:** en la pestaña [Actions](../../actions/workflows/app.yml) del repositorio, abre la última ejecución verde y descarga `pokecotiza-android` (APK) o `pokecotiza-windows`. Ver [plan de trabajo](docs/plan-de-trabajo.md).
+> **Instalar:** [docs/instalar.md](docs/instalar.md).
 
-## Qué hará
-- **Identificar cartas**
-  - Android: foto con la cámara → lee nombre, PS, código de set, letra de regulación y número.
-  - Android y Windows: ingreso manual.
-  - Windows: importar un Excel o una hoja de Google Sheets.
-- **Cotizar** en varios mercados y convertir a CLP.
-- **Guardar** la colección y los precios en Google Sheets, compartida entre teléfono y PC.
-- **Actualizar a diario** los precios de toda la colección con una tarea gratuita de GitHub Actions, y llevar historial.
-- Cartas en **inglés, español y japonés**, y **gradeadas** (PSA, etc.).
+## Qué hace
+- **Identificar cartas:** foto con la cámara en Android (lee nombre, PS, número, set y regulación), escribir nombre y número, o importar un Excel. Siempre se confirma la carta entre las candidatas de TCGdex.
+- **Cotizar** en TCGplayer (USD) y Cardmarket (EUR) vía TCGdex, y en Chile en TCGmatch (mediana de ventas reales) y AFK Store. Todo se convierte a pesos con el dólar y el euro de mindicador.cl.
+- **Dos valores por carta:** precio publicado (mediana) y precio de ventas reales.
+- **Guardar** en el dispositivo o en tu Google Sheets, compartida entre teléfono y PC.
+- **Historial y gráficos** del valor de cada carta y de la colección.
+- **Tarea diaria** gratuita en GitHub Actions que actualiza toda la colección en la planilla.
+- **Exportar e importar** la colección en Excel.
+- Cartas en **inglés, español y japonés**; **gradeadas** con valor manual.
 
-## Documentación
+## Estructura
+| Carpeta | Qué hay |
+|---|---|
+| `app/` | App Flutter (Android y Windows) |
+| `packages/core/` | Lógica compartida en Dart: fuentes de precios, lector de texto, valorización, planilla |
+| `tools/actualizador/` | Tarea diaria |
+| `docs/` | Requisitos, arquitectura, decisiones, una guía por fase y guías de configuración |
+
+## Documentación principal
 | Documento | Contenido |
 |---|---|
-| [docs/requisitos.md](docs/requisitos.md) | Qué debe hacer la app (requisitos levantados contigo) |
-| [docs/arquitectura.md](docs/arquitectura.md) | Diseño técnico en papel |
-| [docs/mercados.md](docs/mercados.md) | Fuentes de precios y su estado de verificación |
-| [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md) | Fases, entregables y orden de desarrollo |
-| [docs/decisiones.md](docs/decisiones.md) | Registro de decisiones y por qué se tomaron |
-| [docs/preguntas-abiertas.md](docs/preguntas-abiertas.md) | Lo que falta definir |
-
-## Stack previsto
-Flutter (Dart) para la app, un paquete Dart compartido con la lógica de cotización, Google Sheets como base de datos y GitHub Actions para la actualización diaria. Detalle en la arquitectura.
+| [docs/instalar.md](docs/instalar.md) | Descargar, instalar y primeros pasos |
+| [docs/google-cloud.md](docs/google-cloud.md) | Conectar con Google Sheets |
+| [docs/tarea-diaria.md](docs/tarea-diaria.md) | Configurar la actualización diaria |
+| [docs/firma-android.md](docs/firma-android.md) | Clave de firma fija para Android |
+| [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md) | Fases y su estado |
+| [docs/decisiones.md](docs/decisiones.md) | Decisiones y por qué |
+| [docs/arquitectura.md](docs/arquitectura.md) | Diseño técnico |
 
 ## Licencia
 Todos los derechos reservados. El código es visible pero no se concede permiso para usarlo, copiarlo ni distribuirlo. Ver [LICENSE](LICENSE).
