@@ -9,6 +9,7 @@ import '../servicios/estado.dart';
 import '../util/formato.dart';
 import 'agregar.dart';
 import 'ajustes.dart';
+import 'grafico.dart';
 import 'detalle.dart';
 
 class PantallaColeccion extends StatelessWidget {
@@ -177,6 +178,12 @@ class _Total extends StatelessWidget {
               _Cifra(etiqueta: 'Publicado', valor: pesos(t.publicadoClp)),
               _Cifra(etiqueta: 'Ventas reales', valor: pesos(t.ventasClp)),
             ]),
+            const SizedBox(height: 12),
+            FutureBuilder<List<PuntoValor>>(
+              key: ValueKey(estado.versionHistorial),
+              future: estado.almacen.historialColeccion(),
+              builder: (_, s) => s.hasData ? GraficoValor(puntos: s.data!, alto: 120) : const SizedBox(height: 48),
+            ),
             if (estado.tipoCambio != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),

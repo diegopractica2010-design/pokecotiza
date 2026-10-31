@@ -1,6 +1,7 @@
 import '../errores.dart';
 import '../fuentes/mindicador.dart';
 import '../modelos.dart';
+import '../valorizacion.dart';
 import 'esquema.dart';
 import 'sheets_cliente.dart';
 
@@ -173,6 +174,21 @@ class PlanillaColeccion {
                     detalle: 'precio anterior'),
       ];
     }
+    return r;
+  }
+
+  /// Resumen diario del valor de la colección (pestaña Resumen), ordenado.
+  Future<List<PuntoValor>> leerResumen() async {
+    final filas = await _sheets.leer(idPlanilla, Esquema.rango(Esquema.resumen));
+    final r = <PuntoValor>[];
+    for (final f in filas.skip(1)) {
+      final fecha = f.isEmpty ? null : DateTime.tryParse('${f[0]}');
+      if (fecha == null) continue;
+      int? n(int i) =>
+          i < f.length && f[i] is num ? (f[i] as num).round() : int.tryParse(i < f.length ? '${f[i]}' : '');
+      r.add(PuntoValor(fecha: fecha, publicadoClp: n(1), ventasClp: n(2)));
+    }
+    r.sort((a, b) => a.fecha.compareTo(b.fecha));
     return r;
   }
 

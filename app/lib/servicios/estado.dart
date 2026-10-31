@@ -22,6 +22,9 @@ class EstadoApp extends ChangeNotifier {
   TipoCambio? tipoCambio;
   bool cargando = false;
 
+  /// Cambia cuando hay historial nuevo, para que los gráficos se vuelvan a leer.
+  int versionHistorial = 0;
+
   /// Avance de "Actualizar precios": (hechas, total), o null si no corre.
   (int, int)? progreso;
   String? error;
@@ -87,6 +90,7 @@ class EstadoApp extends ChangeNotifier {
       final g = CotizacionGuardada(fecha: r.fecha, valor: r.valor, cotizaciones: r.cotizaciones, fallas: r.fallas);
       await almacen.guardarCotizacion(carta.id, g);
       cotizaciones[carta.id] = g;
+      versionHistorial++;
       notifyListeners();
       return g;
     } on FuenteNoDisponible catch (e) {
@@ -108,10 +112,16 @@ class EstadoApp extends ChangeNotifier {
     notifyListeners();
     try {
       final lista = [...cartas];
+      var cotizadas = 0;
       for (var i = 0; i < lista.length; i++) {
-        await cotizarUna(lista[i]);
+        if (await cotizarUna(lista[i]) != null) cotizadas++;
         progreso = (i + 1, lista.length);
         notifyListeners();
+      }
+      // El total del día alimenta el gráfico de la colección.
+      if (cotizadas > 0) {
+        await almacen.registrarResumen(total, lista.length, DateTime.now());
+        versionHistorial++;
       }
     } on Object catch (e) {
       error = 'La actualización se detuvo: $e';

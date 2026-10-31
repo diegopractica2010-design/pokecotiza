@@ -33,6 +33,14 @@ class AlmacenMemoria implements Almacen {
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async => cots[idCarta] = c;
   @override
   Future<void> eliminarCotizacion(String idCarta) async => cots.remove(idCarta);
+  final List<PuntoValor> resumen = [];
+  @override
+  Future<List<PuntoValor>> historialCarta(CartaColeccion carta) async => const [];
+  @override
+  Future<List<PuntoValor>> historialColeccion() async => resumen;
+  @override
+  Future<void> registrarResumen(({int publicadoClp, int ventasClp}) total, int cartas, DateTime fecha) async =>
+      resumen.add(PuntoValor(fecha: fecha, publicadoClp: total.publicadoClp, ventasClp: total.ventasClp));
   @override
   Future<TipoCambio?> leerTipoCambio() async => cambio;
   @override

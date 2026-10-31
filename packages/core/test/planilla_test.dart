@@ -202,4 +202,31 @@ void main() {
     expect(idPlanillaDesdeEnlace('https://tcgmatch.cl/producto/catalogo/1'), isNull);
     expect(enlacePlanilla('abc').toString(), 'https://docs.google.com/spreadsheets/d/abc/edit');
   });
+
+  test('puntos de valor por fecha desde el historial y resumen ordenado', () async {
+    final p = await PlanillaColeccion.crear(sheets);
+    final cambio = TipoCambio(usd: 1000, eur: 1100, fecha: DateTime.utc(2026, 10, 30));
+    await p.registrarPrecios(
+        'c1',
+        const [
+          Cotizacion(fuente: 'TCGmatch', tipo: TipoPrecio.publicado, moneda: Moneda.clp, valor: 30000),
+          Cotizacion(fuente: 'TCGplayer', tipo: TipoPrecio.publicado, moneda: Moneda.usd, valor: 40), // 40.000
+          Cotizacion(fuente: 'TCGmatch', tipo: TipoPrecio.ventas, moneda: Moneda.clp, valor: 28000),
+        ],
+        cambio,
+        fecha: DateTime.utc(2026, 10, 31));
+    await p.registrarPrecios(
+        'c1',
+        const [
+          Cotizacion(fuente: 'TCGmatch', tipo: TipoPrecio.publicado, moneda: Moneda.clp, valor: 25000),
+        ],
+        cambio,
+        fecha: DateTime.utc(2026, 10, 30));
+    final puntos = puntosDesdeHistorial(lucario, await p.historial('c1'));
+    expect(puntos.map((x) => (x.fecha.day, x.publicadoClp, x.ventasClp)), [(30, 25000, null), (31, 35000, 28000)]);
+
+    await p.registrarResumen((publicadoClp: 2, ventasClp: 1), 1, fecha: DateTime.utc(2026, 11, 2));
+    await p.registrarResumen((publicadoClp: 1, ventasClp: 1), 1, fecha: DateTime.utc(2026, 11, 1));
+    expect((await p.leerResumen()).map((x) => x.publicadoClp), [1, 2]);
+  });
 }

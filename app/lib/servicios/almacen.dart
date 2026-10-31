@@ -68,6 +68,15 @@ abstract class Almacen {
 
   /// Olvida la última cotización de una carta (por ejemplo, si cambió de carta).
   Future<void> eliminarCotizacion(String idCarta);
+
+  /// Evolución del valor de una carta, de la más antigua a la más reciente.
+  Future<List<PuntoValor>> historialCarta(CartaColeccion carta);
+
+  /// Evolución del valor total de la colección.
+  Future<List<PuntoValor>> historialColeccion();
+
+  /// Registra el valor total de la colección (después de actualizar precios).
+  Future<void> registrarResumen(({int publicadoClp, int ventasClp}) total, int cartas, DateTime fecha);
   Future<TipoCambio?> leerTipoCambio();
   Future<void> guardarTipoCambio(TipoCambio t);
 
@@ -173,12 +182,54 @@ class AlmacenLocal implements Almacen {
     return r;
   }
 
+  /// Máximo de puntos guardados por carta y para la colección (~1 año diario).
+  static const maxPuntos = 400;
+
   @override
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) => _enCola(() async {
         final datos = await _leer();
         final m = Map<String, dynamic>.from(datos['cotizaciones'] as Map? ?? {});
         m[idCarta] = c.aJson();
         datos['cotizaciones'] = m;
+        if (c.valor.publicadoClp != null || c.valor.ventasClp != null) {
+          final h = Map<String, dynamic>.from(datos['historial'] as Map? ?? {});
+          final puntos = [...(h[idCarta] as List? ?? const [])];
+          puntos.add(
+              PuntoValor(fecha: c.fecha, publicadoClp: c.valor.publicadoClp, ventasClp: c.valor.ventasClp).aJson());
+          h[idCarta] = puntos.length > maxPuntos ? puntos.sublist(puntos.length - maxPuntos) : puntos;
+          datos['historial'] = h;
+        }
+        await _escribir(datos);
+      });
+
+  List<PuntoValor> _puntos(Object? lista) {
+    final r = <PuntoValor>[];
+    for (final p in (lista as List? ?? const [])) {
+      try {
+        r.add(PuntoValor.desdeJson(p as Map<String, dynamic>));
+      } on Object {
+        // punto ilegible: se omite
+      }
+    }
+    return r..sort((a, b) => a.fecha.compareTo(b.fecha));
+  }
+
+  @override
+  Future<List<PuntoValor>> historialCarta(CartaColeccion carta) async =>
+      _puntos(((await _leer())['historial'] as Map?)?[carta.id]);
+
+  @override
+  Future<List<PuntoValor>> historialColeccion() async => _puntos((await _leer())['resumen']);
+
+  @override
+  Future<void> registrarResumen(({int publicadoClp, int ventasClp}) total, int cartas, DateTime fecha) =>
+      _enCola(() async {
+        final datos = await _leer();
+        final puntos = [
+          ...(datos['resumen'] as List? ?? const []),
+          PuntoValor(fecha: fecha, publicadoClp: total.publicadoClp, ventasClp: total.ventasClp).aJson(),
+        ];
+        datos['resumen'] = puntos.length > maxPuntos ? puntos.sublist(puntos.length - maxPuntos) : puntos;
         await _escribir(datos);
       });
 
@@ -259,6 +310,31 @@ class AlmacenPlanilla implements Almacen {
 
   @override
   Future<void> eliminarCotizacion(String idCarta) => cache.eliminarCotizacion(idCarta);
+
+  /// Del historial de la planilla; si Google no responde, de la copia local.
+  @override
+  Future<List<PuntoValor>> historialCarta(CartaColeccion carta) async {
+    try {
+      return puntosDesdeHistorial(carta, await planilla.historial(carta.id));
+    } on Exception {
+      return cache.historialCarta(carta);
+    }
+  }
+
+  @override
+  Future<List<PuntoValor>> historialColeccion() async {
+    try {
+      return await planilla.leerResumen();
+    } on Exception {
+      return cache.historialColeccion();
+    }
+  }
+
+  @override
+  Future<void> registrarResumen(({int publicadoClp, int ventasClp}) total, int cartas, DateTime fecha) async {
+    await cache.registrarResumen(total, cartas, fecha);
+    await planilla.registrarResumen(total, cartas, fecha: fecha);
+  }
 
   @override
   Future<void> guardarCotizacion(String idCarta, CotizacionGuardada c) async {

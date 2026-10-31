@@ -62,3 +62,42 @@ ValorCarta valorizar(CartaColeccion carta, List<Cotizacion> cotizaciones, TipoCa
   }
   return (publicadoClp: publicado, ventasClp: ventas);
 }
+
+/// Valor de una carta (o de la colección) en una fecha, para los gráficos.
+class PuntoValor {
+  const PuntoValor({required this.fecha, this.publicadoClp, this.ventasClp});
+
+  final DateTime fecha;
+  final int? publicadoClp;
+  final int? ventasClp;
+
+  Map<String, Object?> aJson() => {'fecha': fecha.toUtc().toIso8601String(), 'p': publicadoClp, 'v': ventasClp};
+
+  static PuntoValor desdeJson(Map<String, dynamic> j) =>
+      PuntoValor(fecha: DateTime.parse(j['fecha'] as String), publicadoClp: j['p'] as int?, ventasClp: j['v'] as int?);
+}
+
+/// Convierte el historial de precios de una carta (filas de la pestaña
+/// Precios, ya en CLP) en un punto por fecha de registro, ordenados.
+List<PuntoValor> puntosDesdeHistorial(
+    CartaColeccion carta, List<({DateTime fecha, Cotizacion cotizacion, int valorClp})> historial) {
+  final porFecha = <DateTime, List<Cotizacion>>{};
+  for (final h in historial) {
+    porFecha.putIfAbsent(h.fecha, () => []).add(Cotizacion(
+          fuente: h.cotizacion.fuente,
+          tipo: h.cotizacion.tipo,
+          moneda: Moneda.clp, // ya convertido al registrarlo
+          valor: h.valorClp.toDouble(),
+        ));
+  }
+  // Los valores ya están en pesos: el tipo de cambio no se usa.
+  final sinConversion = TipoCambio(usd: 0, eur: 0, fecha: DateTime.utc(2000));
+  final fechas = porFecha.keys.toList()..sort();
+  return [
+    for (final f in fechas)
+      () {
+        final v = valorizar(carta, porFecha[f]!, sinConversion);
+        return PuntoValor(fecha: f, publicadoClp: v.publicadoClp, ventasClp: v.ventasClp);
+      }(),
+  ];
+}
